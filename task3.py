@@ -2,12 +2,10 @@ import tkinter as tk
 import csv
 import math
 
-# Constants for canvas size and margins
-WIDTH, HEIGHT = 600, 400
-MARGIN = 50
-LEGEND_X = WIDTH - 120
-LEGEND_Y = 30
-LEGEND_SPACING = 20
+# Constants for canvas size and tick intervals
+WIDTH, HEIGHT = 800, 600  # Increased canvas size
+CENTER_X, CENTER_Y = WIDTH / 2, HEIGHT / 2
+TICK_SPACING = 100  # Increased spacing between ticks in pixels
 
 file_path = "data1.csv"
 
@@ -29,11 +27,10 @@ def read_csv(file_path):
 
 x_values, y_values, categories = read_csv(file_path)
 
-# Determine the scale based on data range
-min_x, max_x = min(x_values), max(x_values)
-min_y, max_y = min(y_values), max(y_values)
-x_scale = (WIDTH - 2 * MARGIN) / (max_x - min_x)
-y_scale = (HEIGHT - 2 * MARGIN) / (max_y - min_y)
+# Determine the overall min and max for both x and y to create a square plot
+overall_min = min(min(x_values), min(y_values))
+overall_max = max(max(x_values), max(y_values))
+scale = min(WIDTH, HEIGHT) / 2 / max(abs(overall_min), abs(overall_max))
 
 # Assign unique shape to each category
 unique_categories = list(set(categories))
@@ -43,24 +40,15 @@ category_shapes = {
 }
 
 
-# Function to find a rounded interval for ticks
-def find_tick_interval(data_range):
-    ideal_ticks = 10
-    raw_interval = data_range / ideal_ticks
-    magnitude = 10 ** math.floor(math.log10(raw_interval))
-    refined_interval = round(raw_interval / magnitude) * magnitude
-    return refined_interval
-
-
-# Function to convert data point to canvas coordinates
+# Convert data point to canvas coordinates
 def to_canvas_coordinates(x, y):
-    canvas_x = MARGIN + (x - min_x) * x_scale
-    canvas_y = HEIGHT - MARGIN - (y - min_y) * y_scale
+    canvas_x = CENTER_X + x * scale
+    canvas_y = CENTER_Y - y * scale
     return canvas_x, canvas_y
 
 
-# Shape drawing function
-def draw_shape(canvas, shape, x, y, size=10):
+# Draw shape function
+def draw_shape(canvas, shape, x, y, size=15):  # Increased shape size
     if shape == "circle":
         canvas.create_oval(x - size, y - size, x + size, y + size)
     elif shape == "square":
@@ -76,32 +64,36 @@ def draw():
     canvas.pack()
 
     # Draw axes
-    canvas.create_line(
-        MARGIN, HEIGHT - MARGIN, WIDTH - MARGIN, HEIGHT - MARGIN
-    )  # X-axis
-    canvas.create_line(MARGIN, MARGIN, MARGIN, HEIGHT - MARGIN)  # Y-axis
+    canvas.create_line(0, CENTER_Y, WIDTH, CENTER_Y)  # X-axis
+    canvas.create_line(CENTER_X, 0, CENTER_X, HEIGHT)  # Y-axis
 
-    # Draw ticks for X-axis
-    x_interval = find_tick_interval(max_x - min_x)
-    x_start = math.floor(min_x / x_interval) * x_interval
-    x_end = math.ceil(max_x / x_interval) * x_interval
+    # Draw ticks and their values on X-axis
+    x_tick_value = overall_min
+    while x_tick_value <= overall_max:
+        canvas_x = to_canvas_coordinates(x_tick_value, 0)[0]
+        if canvas_x != CENTER_X:  # Skip the center
+            canvas.create_line(canvas_x, CENTER_Y - 10, canvas_x, CENTER_Y + 10)
+            canvas.create_text(
+                canvas_x,
+                CENTER_Y + 20,
+                text=str(round(x_tick_value, 1)),
+                font=("TkDefaultFont", 10),
+            )
+        x_tick_value += overall_max / 10  # Adjust this for different intervals
 
-    while x_start <= x_end:
-        canvas_x = to_canvas_coordinates(x_start, 0)[0]
-        canvas.create_line(canvas_x, HEIGHT - MARGIN, canvas_x, HEIGHT - MARGIN + 5)
-        canvas.create_text(canvas_x, HEIGHT - MARGIN + 15, text=f"{x_start:.1f}")
-        x_start += x_interval
-
-    # Draw ticks for Y-axis
-    y_interval = find_tick_interval(max_y - min_y)
-    y_start = math.floor(min_y / y_interval) * y_interval
-    y_end = math.ceil(max_y / y_interval) * y_interval
-
-    while y_start <= y_end:
-        canvas_y = to_canvas_coordinates(0, y_start)[1]
-        canvas.create_line(MARGIN - 5, canvas_y, MARGIN, canvas_y)
-        canvas.create_text(MARGIN - 20, canvas_y, text=f"{y_start:.1f}")
-        y_start += y_interval
+    # Draw ticks and their values on Y-axis
+    y_tick_value = overall_min
+    while y_tick_value <= overall_max:
+        canvas_y = to_canvas_coordinates(0, y_tick_value)[1]
+        if canvas_y != CENTER_Y:  # Skip the center
+            canvas.create_line(CENTER_X - 10, canvas_y, CENTER_X + 10, canvas_y)
+            canvas.create_text(
+                CENTER_X - 30,
+                canvas_y,
+                text=str(round(y_tick_value, 1)),
+                font=("TkDefaultFont", 10),
+            )
+        y_tick_value += overall_max / 10  # Adjust this for different intervals
 
     # Plot data points
     for x, y, category in zip(x_values, y_values, categories):
@@ -111,9 +103,13 @@ def draw():
     # Draw legend
     for i, category in enumerate(unique_categories):
         shape = category_shapes[category]
-        y = LEGEND_Y + i * LEGEND_SPACING
-        draw_shape(canvas, shape, LEGEND_X - 10, y, size=5)
-        canvas.create_text(LEGEND_X, y, text=category, anchor="w")
+        y = 20 + i * 30  # Adjust the position of the legend as needed
+        draw_shape(
+            canvas, shape, WIDTH - 100, y, size=15
+        )  # Increased shape size for legend
+        canvas.create_text(
+            WIDTH - 80, y, text=category, anchor="w", font=("TkDefaultFont", 10)
+        )
 
     root.mainloop()
 
