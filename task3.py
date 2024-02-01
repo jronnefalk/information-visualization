@@ -7,8 +7,7 @@ WIDTH, HEIGHT = 800, 600  # Increased canvas size
 CENTER_X, CENTER_Y = WIDTH / 2, HEIGHT / 2
 TICK_SPACING = 100  # Increased spacing between ticks in pixels
 
-file_path = "data1.csv"
-
+file_path = "data2.csv"
 
 def read_csv(file_path):
     x_values = []
@@ -28,9 +27,11 @@ def read_csv(file_path):
 x_values, y_values, categories = read_csv(file_path)
 
 # Determine the overall min and max for both x and y to create a square plot
-overall_min = min(min(x_values), min(y_values))
-overall_max = max(max(x_values), max(y_values))
-scale = min(WIDTH, HEIGHT) / 2 / max(abs(overall_min), abs(overall_max))
+overall_min = 10 * math.floor(min(min(x_values), min(y_values)) / 10)
+overall_max = 10 * math.ceil(max(max(x_values), max(y_values)) / 10)
+
+
+scale = min(WIDTH, HEIGHT) / 2 / max(abs(overall_min), abs(overall_max)+5)
 
 # Assign unique shape to each category
 unique_categories = list(set(categories))
@@ -48,7 +49,7 @@ def to_canvas_coordinates(x, y):
 
 
 # Draw shape function
-def draw_shape(canvas, shape, x, y, size=15):  # Increased shape size
+def draw_shape(canvas, shape, x, y, size=5):  # Increased shape size
     if shape == "circle":
         canvas.create_oval(x - size, y - size, x + size, y + size)
     elif shape == "square":
@@ -76,7 +77,7 @@ def draw():
             canvas.create_text(
                 canvas_x,
                 CENTER_Y + 20,
-                text=str(round(x_tick_value, 1)),
+                text=str(round(x_tick_value)),
                 font=("TkDefaultFont", 10),
             )
         x_tick_value += overall_max / 10  # Adjust this for different intervals
@@ -90,7 +91,7 @@ def draw():
             canvas.create_text(
                 CENTER_X - 30,
                 canvas_y,
-                text=str(round(y_tick_value, 1)),
+                text=str(round(y_tick_value)),
                 font=("TkDefaultFont", 10),
             )
         y_tick_value += overall_max / 10  # Adjust this for different intervals
@@ -105,7 +106,7 @@ def draw():
         shape = category_shapes[category]
         y = 20 + i * 30  # Adjust the position of the legend as needed
         draw_shape(
-            canvas, shape, WIDTH - 100, y, size=15
+            canvas, shape, WIDTH - 100, y, size=5
         )  # Increased shape size for legend
         canvas.create_text(
             WIDTH - 80, y, text=category, anchor="w", font=("TkDefaultFont", 10)
