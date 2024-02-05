@@ -88,7 +88,7 @@ class ScatterPlotApp:
         self.use_new_grid = False
         self.highlighted_indexes = []
 
-        #self.category_shapes = {}  # Store shapes for each category
+        # self.category_shapes = {}  # Store shapes for each category
         # Replace the previous definition of category_shapes
         unique_categories = sorted(set(self.categories), key=lambda x: self.categories.index(x))
         self.category_shapes = OrderedDict(
@@ -97,9 +97,6 @@ class ScatterPlotApp:
 
         self.draw_static_elements()
         self.redraw()
-
-        self.canvas.bind("<Button-1>", self.on_left_click)
-        self.canvas.bind("<Control-Button-1>", self.on_right_click)
 
     def draw_static_elements(self):
         # Draw axes and ticks
@@ -197,7 +194,6 @@ class ScatterPlotApp:
                 )
 
     def get_shape_for_category(self, category):
-
         # If a shape is already assigned to the category, return it
         if category in self.category_shapes:
             return self.category_shapes[category]
@@ -240,66 +236,51 @@ class ScatterPlotApp:
             self.canvas.itemconfig(shape_id, outline=outline_color, width=2)
             self.canvas.itemconfig(shape_id, fill=fill_color)
 
+            # Bind events to the points after redrawing
+            self.canvas.tag_bind(
+                shape_id, "<Button-1>", lambda event, index=i: self.on_left_click(event, index)
+            )
+            self.canvas.tag_bind(
+                shape_id,
+                "<Control-Button-1>",
+                lambda event, index=i: self.on_right_click(event, index),
+            )
 
         if self.selected_index is not None:
             # Display the selected index separately
             x, y, _ = self.data_points[self.selected_index]
             canvas_x, canvas_y = to_canvas_coordinates(x, y, self.scale)
-            self.canvas.create_text(
-                canvas_x + 10, canvas_y - 10, text=str(self.selected_index), anchor="w", font=("TkDefaultFont", 8), fill="red"
-            )
 
-
-    def on_left_click(self, event):
-        x, y = (event.x - CENTER_X) / self.scale, (CENTER_Y - event.y) / self.scale
-        clicked_index = None
-        min_dist = float("inf")
-        for i, (point_x, point_y, _) in enumerate(self.data_points):
-            dist = euclidean_distance((x, y), (point_x, point_y))
-            if dist < min_dist:
-                min_dist = dist
-                clicked_index = i
-
+    def on_left_click(self, event, index):
         if self.use_new_grid:
-            if self.selected_index == clicked_index:
+            if self.selected_index == index:
                 # Reset the grid to the original
                 self.use_new_grid = False
                 self.selected_index = None
                 self.highlighted_indexes = []
             else:
-                self.selected_index = clicked_index
+                self.selected_index = index
         else:
-            self.selected_index = clicked_index
+            self.selected_index = index
             self.use_new_grid = True
 
         self.redraw()
 
-    def on_right_click(self, event):
-        x, y = (event.x - CENTER_X) / self.scale, (CENTER_Y - event.y) / self.scale
-        clicked_index = None
-        min_dist = float("inf")
-        for i, (point_x, point_y, _) in enumerate(self.data_points):
-            dist = euclidean_distance((x, y), (point_x, point_y))
-            if dist < min_dist:
-                min_dist = dist
-                clicked_index = i
-
-        if clicked_index is not None:
-            if clicked_index in self.highlighted_indexes:
+    def on_right_click(self, event, index):
+        if index is not None:
+            if index in self.highlighted_indexes:
                 # Clicked on an already highlighted point, remove all highlighting
                 self.highlighted_indexes = []
             else:
                 # Highlight the clicked point and its neighbors
                 neighbors = find_nearest_neighbors(
-                    self.data_points[clicked_index][0],
-                    self.data_points[clicked_index][1],
+                    self.data_points[index][0],
+                    self.data_points[index][1],
                     self.data_points,
                 )
-                self.highlighted_indexes = [clicked_index] + neighbors
-
+                self.highlighted_indexes = [index] + neighbors
 
         self.redraw()
-
 
 
 def main():
