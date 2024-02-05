@@ -1,8 +1,8 @@
-from collections import OrderedDict
 import tkinter as tk
 import csv
 import math
 import numpy as np
+from collections import OrderedDict
 
 # Constants for canvas size
 WIDTH, HEIGHT = 800, 600
@@ -54,7 +54,8 @@ def find_nearest_neighbors(x, y, points, n=5, exclude_index=None):
         for i, point in enumerate(points)
     ]
     distances.sort(key=lambda x: x[1])
-    neighbors = [index for index, _ in distances[1 : n + 1] if index != exclude_index]
+    print("dist: ", distances)
+    neighbors = [index for index, _ in distances[0:n] if index != exclude_index]
     return neighbors
 
 
@@ -75,10 +76,13 @@ class ScatterPlotApp:
         self.root.title("Interactive Scatter Plot")
         self.canvas = tk.Canvas(self.root, width=WIDTH, height=HEIGHT)
         self.canvas.pack()
+        
 
         self.data_path = data_path
         self.x_values, self.y_values, self.categories = read_csv(self.data_path)
-        self.data_points = list(zip(self.x_values, self.y_values, self.categories))
+        self.original_data = list(
+            zip(self.x_values, self.y_values, self.categories)
+        )  # Store original data
 
         self.overall_min = math.floor(min(min(self.x_values), min(self.y_values)))
         self.overall_max = math.ceil(max(max(self.x_values), max(self.y_values)))
@@ -87,6 +91,8 @@ class ScatterPlotApp:
         self.selected_index = None
         self.use_new_grid = False
         self.highlighted_indexes = []
+
+        self.data_points = self.original_data.copy()  # Initialize data_points
 
         unique_categories = sorted(
             set(self.categories), key=lambda x: self.categories.index(x)
@@ -100,6 +106,11 @@ class ScatterPlotApp:
 
         self.draw_static_elements()
         self.redraw()
+
+        self.canvas.bind("<Control-Button-1>", self.on_left_click)
+        self.canvas.bind("<Control-Button-2>", self.on_right_click)
+
+        self.selected_index_when_reset = None  # Initialize the attribute
 
     def draw_static_elements(self):
         self.draw_axes()
@@ -233,15 +244,12 @@ class ScatterPlotApp:
             self.canvas.itemconfig(shape_id, outline=outline_color, width=2)
             self.canvas.itemconfig(shape_id, fill=fill_color)
 
-            self.canvas.tag_bind(
-                shape_id,
-                "<Button-1>",
-                lambda event, index=i: self.on_left_click(event, index),
-            )
-            self.canvas.tag_bind(
-                shape_id,
-                "<Control-Button-1>",
-                lambda event, index=i: self.on_right_click(event, index),
+            self.canvas.create_text(
+                canvas_x + 10,
+                canvas_y - 10,
+                text=str(i),
+                anchor="w",
+                font=("TkDefaultFont", 8),
             )
 
         if self.selected_index is not None:
@@ -256,28 +264,49 @@ class ScatterPlotApp:
                 fill="red",
             )
 
-    def on_left_click(self, event, index):
-        if self.use_new_grid:
-            # Toggle back to the original data grid
+    def on_left_click(self, event):
+        x, y = (event.x - CENTER_X) / self.scale, (CENTER_Y - event.y) / self.scale
+        clicked_index = None
+        min_dist = float("inf")
+        for i, (point_x, point_y, _) in enumerate(self.data_points):
+            dist = euclidean_distance((x, y), (point_x, point_y))
+            if dist < min_dist:
+                min_dist = dist
+                clicked_index = i
+
+        if self.use_new_grid and self.selected_index == clicked_index:
+            # Reset the grid to its original state
             self.use_new_grid = False
             self.selected_index = None
+            self.highlighted_indexes = []
+            self.data_points = self.original_data.copy()
         else:
+            self.selected_index = clicked_index
             self.use_new_grid = True
-            self.selected_index = index
 
+        self.selected_index_when_reset = self.selected_index  # Update the attribute
         self.redraw()
 
-    def on_right_click(self, event, index):
-        if index is not None:
-            if index in self.highlighted_indexes:
-                self.highlighted_indexes = []
-            else:
-                neighbors = find_nearest_neighbors(
-                    self.data_points[index][0],
-                    self.data_points[index][1],
-                    self.data_points,
-                )
-                self.highlighted_indexes = [index] + neighbors
+    def on_right_click(self, event):
+        x, y = (event.x - CENTER_X) / self.scale, (CENTER_Y - event.y) / self.scale
+        clicked_index = None
+        min_dist = float("inf")
+        for i, (point_x, point_y, _) in enumerate(self.data_points):
+            dist = euclidean_distance((x, y), (point_x, point_y))
+            if dist < min_dist:
+                min_dist = dist
+                clicked_index = i
+
+        if clicked_index is not None:
+            neighbors = find_nearest_neighbors(
+                self.x_values[clicked_index],
+                self.y_values[clicked_index],
+                self.data_points,
+            )
+            print("selected: ", [clicked_index])
+            self.highlighted_indexes = [clicked_index] + neighbors
+            print("highlighted: ", self.highlighted_indexes)
+            print("data_points: ", self.data_points)
 
         self.redraw()
 
