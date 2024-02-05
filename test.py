@@ -1,3 +1,4 @@
+from collections import OrderedDict
 import tkinter as tk
 import csv
 import math
@@ -47,13 +48,17 @@ def euclidean_distance(p1, p2):
     return np.linalg.norm(np.array(p1) - np.array(p2))
 
 
-def find_nearest_neighbors(x, y, points, n=5):
+def find_nearest_neighbors(x, y, points, n=5, exclude_index=None):
     distances = [
         (i, euclidean_distance((x, y), (point[0], point[1])))
         for i, point in enumerate(points)
     ]
     distances.sort(key=lambda x: x[1])
-    return [index for index, _ in distances[1 : n + 1]]  # Exclude self
+    print("dist: ",distances)
+    neighbors = [index for index, _ in distances[0 : n] if index != exclude_index]
+    return neighbors
+
+
 
 
 def get_quadrant(x, y):
@@ -86,13 +91,18 @@ class ScatterPlotApp:
         self.use_new_grid = False
         self.highlighted_indexes = []
 
-        self.category_shapes = {}  # Store shapes for each category
+        #self.category_shapes = {}  # Store shapes for each category
+        # Replace the previous definition of category_shapes
+        unique_categories = sorted(set(self.categories), key=lambda x: self.categories.index(x))
+        self.category_shapes = OrderedDict(
+            (category, shape) for category, shape in zip(unique_categories, ["circle", "square", "triangle"])
+        )
 
         self.draw_static_elements()
         self.redraw()
 
         self.canvas.bind("<Button-1>", self.on_left_click)
-        self.canvas.bind("<Button-3>", self.on_right_click)
+        self.canvas.bind("<Control-Button-1>", self.on_right_click)
 
     def draw_static_elements(self):
         # Draw axes and ticks
@@ -134,7 +144,6 @@ class ScatterPlotApp:
 
         # Draw ticks and tick values
         for x in range(self.overall_min, self.overall_max + 1, int((self.overall_max - self.overall_min) / 10)):
-            print(x)
             canvas_x = to_canvas_coordinates(x, 0, self.scale)[0]
             self.canvas.create_line(
                 canvas_x,
@@ -191,13 +200,13 @@ class ScatterPlotApp:
                 )
 
     def get_shape_for_category(self, category):
+
         # If a shape is already assigned to the category, return it
         if category in self.category_shapes:
             return self.category_shapes[category]
 
-        # Assign a shape for the category
-        shapes = ["circle", "square", "triangle"]
-        shape = shapes[len(self.category_shapes) % len(shapes)]
+        # Assign a shape for the category based on the current count
+        shape = self.category_shapes.get(category, "default")
 
         # Store the shape for future reference
         self.category_shapes[category] = shape
@@ -234,6 +243,20 @@ class ScatterPlotApp:
             self.canvas.itemconfig(shape_id, outline=outline_color, width=2)
             self.canvas.itemconfig(shape_id, fill=fill_color)
 
+            # Display index of the data point
+            self.canvas.create_text(
+                canvas_x + 10, canvas_y - 10, text=str(i), anchor="w", font=("TkDefaultFont", 8)
+            )
+
+        if self.selected_index is not None:
+            # Display the selected index separately
+            x, y, _ = self.data_points[self.selected_index]
+            canvas_x, canvas_y = to_canvas_coordinates(x, y, self.scale)
+            self.canvas.create_text(
+                canvas_x + 10, canvas_y - 10, text=str(self.selected_index), anchor="w", font=("TkDefaultFont", 8), fill="red"
+            )
+
+
     def on_left_click(self, event):
         x, y = (event.x - CENTER_X) / self.scale, (CENTER_Y - event.y) / self.scale
         clicked_index = None
@@ -269,17 +292,19 @@ class ScatterPlotApp:
                 clicked_index = i
 
         if clicked_index is not None:
-            if clicked_index in self.highlighted_indexes:
-                self.highlighted_indexes.remove(clicked_index)
-            else:
-                neighbors = find_nearest_neighbors(
-                    self.x_values[clicked_index],
-                    self.y_values[clicked_index],
-                    self.data_points,
-                )
-                self.highlighted_indexes = neighbors
+            # Find the nearest five neighbors and highlight them
+            neighbors = find_nearest_neighbors(
+                self.x_values[clicked_index],
+                self.y_values[clicked_index],
+                self.data_points,
+            )
+            print("selected: ",[clicked_index])
+            self.highlighted_indexes = [clicked_index] + neighbors
+            print("highlighted: ",self.highlighted_indexes)
+            print("data_points: ",self.data_points)
 
         self.redraw()
+
 
 
 def main():
