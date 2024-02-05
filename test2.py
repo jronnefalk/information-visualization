@@ -91,14 +91,6 @@ class ScatterPlotApp:
         self.use_new_grid = False
         self.highlighted_indexes = []
 
-        # Create the "Reset" button
-        self.reset_button = tk.Button(
-            self.root,
-            text="Reset",
-            command=self.reset_grid,
-        )
-        self.reset_button.pack()
-
         self.data_points = self.original_data.copy()  # Initialize data_points
 
         unique_categories = sorted(
@@ -118,7 +110,6 @@ class ScatterPlotApp:
         self.canvas.bind("<Control-Button-2>", self.on_right_click)
 
         self.selected_index_when_reset = None  # Initialize the attribute
-
 
     def draw_static_elements(self):
         self.draw_axes()
@@ -283,9 +274,11 @@ class ScatterPlotApp:
                 clicked_index = i
 
         if self.use_new_grid and self.selected_index == clicked_index:
+            # Reset the grid to its original state
             self.use_new_grid = False
             self.selected_index = None
             self.highlighted_indexes = []
+            self.data_points = self.original_data.copy()
         else:
             self.selected_index = clicked_index
             self.use_new_grid = True
@@ -313,21 +306,6 @@ class ScatterPlotApp:
             self.highlighted_indexes = [clicked_index] + neighbors
             print("highlighted: ", self.highlighted_indexes)
             print("data_points: ", self.data_points)
-
-        self.redraw()
-
-    def reset_grid(self):
-        if self.selected_index == self.selected_index_when_reset:
-            # Reset the grid to its original state
-            self.use_new_grid = False
-            self.selected_index = None
-            self.highlighted_indexes = []
-            self.data_points = self.original_data.copy()
-        else:
-            # Just clear the selection and highlighted indexes
-            self.use_new_grid = False
-            self.selected_index = None
-            self.highlighted_indexes = []
 
         self.redraw()
 
