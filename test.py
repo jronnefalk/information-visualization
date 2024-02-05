@@ -8,7 +8,7 @@ import numpy as np
 WIDTH, HEIGHT = 800, 600
 CENTER_X, CENTER_Y = WIDTH / 2, HEIGHT / 2
 
-file_path = "data1.csv"
+file_path = "data2.csv"
 
 
 def read_csv(file_path):
@@ -54,11 +54,8 @@ def find_nearest_neighbors(x, y, points, n=5, exclude_index=None):
         for i, point in enumerate(points)
     ]
     distances.sort(key=lambda x: x[1])
-    print("dist: ",distances)
-    neighbors = [index for index, _ in distances[0 : n] if index != exclude_index]
+    neighbors = [index for index, _ in distances[1 : n+1] if index != exclude_index]
     return neighbors
-
-
 
 
 def get_quadrant(x, y):
@@ -243,10 +240,6 @@ class ScatterPlotApp:
             self.canvas.itemconfig(shape_id, outline=outline_color, width=2)
             self.canvas.itemconfig(shape_id, fill=fill_color)
 
-            # Display index of the data point
-            self.canvas.create_text(
-                canvas_x + 10, canvas_y - 10, text=str(i), anchor="w", font=("TkDefaultFont", 8)
-            )
 
         if self.selected_index is not None:
             # Display the selected index separately
@@ -292,16 +285,18 @@ class ScatterPlotApp:
                 clicked_index = i
 
         if clicked_index is not None:
-            # Find the nearest five neighbors and highlight them
-            neighbors = find_nearest_neighbors(
-                self.x_values[clicked_index],
-                self.y_values[clicked_index],
-                self.data_points,
-            )
-            print("selected: ",[clicked_index])
-            self.highlighted_indexes = [clicked_index] + neighbors
-            print("highlighted: ",self.highlighted_indexes)
-            print("data_points: ",self.data_points)
+            if clicked_index in self.highlighted_indexes:
+                # Clicked on an already highlighted point, remove all highlighting
+                self.highlighted_indexes = []
+            else:
+                # Highlight the clicked point and its neighbors
+                neighbors = find_nearest_neighbors(
+                    self.data_points[clicked_index][0],
+                    self.data_points[clicked_index][1],
+                    self.data_points,
+                )
+                self.highlighted_indexes = [clicked_index] + neighbors
+
 
         self.redraw()
 
