@@ -8,7 +8,7 @@ import numpy as np
 WIDTH, HEIGHT = 800, 600
 CENTER_X, CENTER_Y = WIDTH / 2, HEIGHT / 2
 
-file_path = "data2.csv"
+file_path = "data1.csv"
 
 
 def read_csv(file_path):
@@ -85,6 +85,7 @@ class ScatterPlotApp:
         self.scale = min(WIDTH, HEIGHT) / (self.overall_max - self.overall_min) * 0.9
 
         self.selected_index = None
+        self.neighbour_index=None
         self.use_new_grid = False
         self.highlighted_indexes = []
 
@@ -268,9 +269,13 @@ class ScatterPlotApp:
 
     def on_right_click(self, event, index):
         if index is not None:
-            if index in self.highlighted_indexes:
+            print("Right-clicked on index:", index)
+            print("index saved: ", self.neighbour_index)
+            if index is self.neighbour_index:
+                
                 # Clicked on an already highlighted point, remove all highlighting
                 self.highlighted_indexes = []
+                self.neighbour_index = None
             else:
                 # Highlight the clicked point and its neighbors
                 neighbors = find_nearest_neighbors(
@@ -279,6 +284,7 @@ class ScatterPlotApp:
                     self.data_points,
                 )
                 self.highlighted_indexes = [index] + neighbors
+                self.neighbour_index = index
 
         self.redraw()
 
