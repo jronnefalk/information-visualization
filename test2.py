@@ -278,7 +278,7 @@ class ScatterPlotApp:
             self.use_new_grid = False
             self.selected_index = None
             self.highlighted_indexes = []
-            self.data_points = self.original_data.copy()
+            self.move_points_to_new_origin()  # Move points back to original positions
         else:
             self.selected_index = clicked_index
             self.use_new_grid = True
@@ -306,8 +306,6 @@ class ScatterPlotApp:
             self.highlighted_indexes = [clicked_index] + neighbors
             print("highlighted: ", self.highlighted_indexes)
             print("data_points: ", self.data_points)
-
-        self.redraw()
 
 
 def main():
