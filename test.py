@@ -8,8 +8,7 @@ import numpy as np
 WIDTH, HEIGHT = 800, 600
 CENTER_X, CENTER_Y = WIDTH / 2, HEIGHT / 2
 
-file_path = "data1.csv"
-
+file_path = "data2.csv"
 
 def read_csv(file_path):
     x_values, y_values, categories = [], [], []
@@ -78,7 +77,11 @@ class ScatterPlotApp:
 
         self.data_path = data_path
         self.x_values, self.y_values, self.categories = read_csv(self.data_path)
-        self.data_points = list(zip(self.x_values, self.y_values, self.categories))
+        self.original_data = list(
+            zip(self.x_values, self.y_values, self.categories)
+        )  # Store original data
+
+        self.data_points = self.original_data.copy()  # Initialize data_points
 
         self.overall_min = math.floor(min(min(self.x_values), min(self.y_values)))
         self.overall_max = math.ceil(max(max(self.x_values), max(self.y_values)))
@@ -252,20 +255,32 @@ class ScatterPlotApp:
             x, y, _ = self.data_points[self.selected_index]
             canvas_x, canvas_y = to_canvas_coordinates(x, y, self.scale)
 
+
     def on_left_click(self, event, index):
-        if self.use_new_grid:
-            if self.selected_index == index:
-                # Reset the grid to the original
-                self.use_new_grid = False
-                self.selected_index = None
-                self.highlighted_indexes = []
-            else:
-                self.selected_index = index
+        x, y = (event.x - CENTER_X) / self.scale, (CENTER_Y - event.y) / self.scale
+        clicked_index = None
+        min_dist = float("inf")
+        for i, (point_x, point_y, _) in enumerate(self.data_points):
+            dist = euclidean_distance((x, y), (point_x, point_y))
+            if dist < min_dist:
+                min_dist = dist
+                clicked_index = i
+
+        if self.use_new_grid and self.selected_index == clicked_index:
+            # Reset the grid to its original state
+            self.use_new_grid = False
+            self.selected_index = None
+            self.highlighted_indexes = []
+            self.data_points = self.original_data.copy()
         else:
-            self.selected_index = index
+            self.selected_index = clicked_index
             self.use_new_grid = True
 
+        self.selected_index_when_reset = self.selected_index  # Update the attribute
         self.redraw()
+
+
+
 
     def on_right_click(self, event, index):
         if index is not None:
