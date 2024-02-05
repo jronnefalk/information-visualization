@@ -133,7 +133,8 @@ class ScatterPlotApp:
         )
 
         # Draw ticks and tick values
-        for x in range(self.overall_min, self.overall_max + 1):
+        for x in range(self.overall_min, self.overall_max + 1, int((self.overall_max - self.overall_min) / 10)):
+            print(x)
             canvas_x = to_canvas_coordinates(x, 0, self.scale)[0]
             self.canvas.create_line(
                 canvas_x,
@@ -148,7 +149,7 @@ class ScatterPlotApp:
                 text=str(x),
                 anchor="n",
             )
-        for y in range(self.overall_min, self.overall_max + 1):
+        for y in range(self.overall_min, self.overall_max + 1, int((self.overall_max - self.overall_min) / 10)):
             canvas_y = to_canvas_coordinates(0, y, self.scale)[1]
             self.canvas.create_line(
                 CENTER_X - 5,
