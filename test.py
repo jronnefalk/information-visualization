@@ -215,11 +215,19 @@ class ScatterPlotApp:
             # Highlight selected origin
             outline_color = "red" if i == self.selected_index else "black"
 
+            # Set colors based on the quadrant
+            quadrant = get_quadrant(x, y)
+            quadrant_colors = {
+                1: "green",
+                2: "blue",
+                3: "pink",
+                4: "brown",
+            }
+            fill_color = quadrant_colors.get(quadrant, "black")
+
             # Highlight neighbors
             if i in self.highlighted_indexes:
                 fill_color = "orange"
-            else:
-                fill_color = "black"
 
             shape_id = self.draw_shape(self.canvas, shape, canvas_x, canvas_y, size=5)
             self.canvas.itemconfig(shape_id, outline=outline_color, width=2)
@@ -237,7 +245,9 @@ class ScatterPlotApp:
 
         if self.use_new_grid:
             if self.selected_index == clicked_index:
+                # Reset the grid to the original
                 self.use_new_grid = False
+                self.selected_index = None
                 self.highlighted_indexes = []
             else:
                 self.selected_index = clicked_index
