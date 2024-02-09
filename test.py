@@ -98,6 +98,7 @@ class ScatterPlotApp:
         self.category_shapes = OrderedDict(
             (category, shape) for category, shape in zip(unique_categories, ["circle", "square", "triangle"])
         )
+        
 
         self.draw_static_elements()
         self.redraw()
@@ -111,7 +112,7 @@ class ScatterPlotApp:
         self.canvas.create_text(
             legend_x, legend_y, text="Legend", font=("Helvetica", 16, "bold")
         )
-        categories = set(self.categories)
+        categories = sorted(set(self.categories))
         for i, category in enumerate(categories):
             legend_shape_x = legend_x + 120
             legend_shape_y = legend_y + 20 + i * 30
@@ -284,8 +285,7 @@ class ScatterPlotApp:
 
     def on_right_click(self, event, index):
         if index is not None:
-            print("Right-clicked on index:", index)
-            print("index saved: ", self.neighbour_index)
+          
             if index is self.neighbour_index:
                 
                 # Clicked on an already highlighted point, remove all highlighting

@@ -7,7 +7,7 @@ import numpy as np
 ######################################################
 # THE BUTTONS IN USE ARE
 # - Left click for the new grid
-# - Control+left click for the nearest neighbors
+# - Control+left click for the 5 nearest neighbors
 ######################################################
 
 # Defining canvas size and center coordinates
@@ -48,13 +48,13 @@ def euclidean_distance(p1, p2):
 
 
 # Find the nearest neighbors to a given point
-def find_nearest_neighbors(x, y, points, n=5, exclude_index=None):
+def find_nearest_neighbors(x, y, points, n=5):
     distances = [
         (i, euclidean_distance((x, y), (point[0], point[1])))
         for i, point in enumerate(points)
     ]
     distances.sort(key=lambda x: x[1])
-    neighbors = [index for index, _ in distances[1 : n + 1] if index != exclude_index]
+    neighbors = [index for index, _ in distances[1 : n + 1]]
     return neighbors
 
 
@@ -272,10 +272,6 @@ class ScatterPlotApp:
                 lambda event, index=i: self.on_right_click(event, index),
             )
 
-        if self.selected_index is not None:
-            # Display the selected index separately
-            x, y, _ = self.data_points[self.selected_index]
-            canvas_x, canvas_y = to_canvas_coordinates(x, y, self.scale)
 
     # Left-click on a data point
     def on_left_click(self, event, index):
@@ -304,26 +300,24 @@ class ScatterPlotApp:
             self.use_new_grid = True
 
         # Store the selected index for reference and redraw the canvas
-        self.selected_index_when_reset = self.selected_index
+        # self.selected_index_when_reset = self.selected_index
         self.redraw()
 
     # Right-click on data points
     def on_right_click(self, event, index):
-        if index is not None:
-            if index is self.neighbour_index:
-
-                # Clicked on an already highlighted point, remove all highlighting
-                self.highlighted_indexes = []
-                self.neighbour_index = None
-            else:
-                # Highlight the clicked point and its neighbors
-                neighbors = find_nearest_neighbors(
-                    self.data_points[index][0],
-                    self.data_points[index][1],
-                    self.data_points,
-                )
-                self.highlighted_indexes = [index] + neighbors
-                self.neighbour_index = index
+        if index is self.neighbour_index:
+            # Clicked on an already highlighted point, remove all highlighting
+            self.highlighted_indexes = []
+            self.neighbour_index = None
+        else:
+            # Highlight the clicked point and its neighbors
+            neighbors = find_nearest_neighbors(
+                self.data_points[index][0],
+                self.data_points[index][1],
+                self.data_points,
+            )
+            self.highlighted_indexes = [index] + neighbors
+            self.neighbour_index = index
 
         self.redraw()
 
@@ -331,7 +325,7 @@ class ScatterPlotApp:
 # Run main application
 def main():
     root = tk.Tk()
-    app = ScatterPlotApp(root, file_path)
+    ScatterPlotApp(root, file_path)
     root.mainloop()
 
 
