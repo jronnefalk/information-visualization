@@ -236,7 +236,7 @@ function focusPlusContext(data) {
       curent_id = d3.select(this)._groups[0][0].__data__.id.toString();
       d3.selectAll(".mapcircle")
         .filter(function (d) {
-          return d.id === curent_id;
+          return d.id == curent_id;
         })
         .attr("r", 15);
 
