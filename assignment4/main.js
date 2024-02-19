@@ -207,12 +207,24 @@ d3.select("#datasetDropdown2").on("change", function () {
 // Function to update node-link diagram based on threshold slider value
 function updateThreshold(svg, threshold) {
   const nodes = svg.selectAll(".nodes circle");
+  const links = svg.selectAll(".links line");
   const labels = svg.selectAll(".labels text");
+
+  // Filter nodes based on threshold
+  nodes.attr("display", function (d) {
+    return d.value > threshold ? "block" : "none";
+  });
+
+  // Filter labels based on threshold
   labels.attr("display", function (d) {
     return d.value > threshold ? "block" : "none";
   });
-  nodes.attr("display", function (d) {
-    return d.value > threshold ? "block" : "none";
+
+  // Filter links based on threshold
+  links.attr("display", function (d) {
+    return d.source.value > threshold && d.target.value > threshold
+      ? "block"
+      : "none";
   });
 }
 
@@ -220,25 +232,9 @@ function updateThreshold(svg, threshold) {
 d3.select("#nodeSizeSlider1").on("input", function () {
   const filterValue = +this.value;
   updateThreshold(svg1, filterValue);
-  // Update the visualization with the new filter value
-  updateNodeLinkDiagram(
-    svg1,
-    d3.select("#datasetDropdown1"),
-    filterValue,
-    svg1,
-    svg2
-  );
 });
 
 d3.select("#nodeSizeSlider2").on("input", function () {
   const filterValue = +this.value;
   updateThreshold(svg2, filterValue);
-  // Update the visualization with the new filter value
-  updateNodeLinkDiagram(
-    svg2,
-    d3.select("#datasetDropdown2"),
-    filterValue,
-    svg1,
-    svg2
-  );
 });
