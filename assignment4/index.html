@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Multiple Node-Link Diagrams with Controls</title>
     <style>
-        /* Add some basic styling */
         .diagram-container {
             display: inline-block;
             margin-right: 20px;
@@ -13,16 +12,25 @@
         }
         #controls {
             margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
         #controls label {
             display: block;
             margin-bottom: 10px;
         }
-        #controls select {
+        #controls select, #controls input[type="range"] {
             width: 100%;
         }
         svg {
             border: 1px solid #ccc;
+        }
+        .labels {
+            font-family: Arial;
+            font-size: 9px;
+            fill: #333;
         }
     </style>
 </head>
@@ -31,6 +39,8 @@
         <div id="controls1" class="controls">
             <label for="datasetDropdown1">Dataset:</label>
             <select id="datasetDropdown1"></select>
+            <label for="nodeSizeSlider1">Node Size Threshold:</label>
+            <input type="range" id="nodeSizeSlider1" min="0" max="100" step="1" value="0">
         </div>
         <svg id="svg1" width="800" height="800"></svg>
     </div>
@@ -39,6 +49,8 @@
         <div id="controls2" class="controls">
             <label for="datasetDropdown2">Dataset:</label>
             <select id="datasetDropdown2"></select>
+            <label for="nodeSizeSlider2">Node Size Threshold:</label>
+            <input type="range" id="nodeSizeSlider2" min="0" max="100" step="1" value="0">
         </div>
         <svg id="svg2" width="800" height="800"></svg>
     </div>

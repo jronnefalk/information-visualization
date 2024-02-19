@@ -32,7 +32,6 @@ const defaultDatasets = [
     name: "Episode 7",
     url: "data/starwars-episode-7-interactions-allCharacters.json",
   },
-  // Add more default datasets as needed
 ];
 
 // Function to create options for dataset dropdown
@@ -53,10 +52,10 @@ createDatasetOptions(d3.select("#datasetDropdown1"), defaultDatasets);
 createDatasetOptions(d3.select("#datasetDropdown2"), defaultDatasets);
 
 // Function to create node-link diagram
-function createNodeLinkDiagram(svg, datasetUrl) {
+function createNodeLinkDiagram(svg, datasetUrl, threshold) {
   d3.json(datasetUrl).then(function (data) {
     // Extract nodes and links from the data
-    const nodes = data.nodes;
+    const nodes = data.nodes.filter((d) => d.value > threshold);
     const links = data.links;
 
     // Create the simulation
@@ -146,22 +145,43 @@ function createNodeLinkDiagram(svg, datasetUrl) {
   });
 }
 
-// Initial creation of node-link diagrams with default datasets
-createNodeLinkDiagram(svg1, defaultDatasets[0].url);
-createNodeLinkDiagram(svg2, defaultDatasets[1].url);
-
-// Function to update node-link diagram based on selected dataset
-function updateNodeLinkDiagram(svg, datasetDropdown) {
+// Function to update node-link diagram based on selected dataset and threshold
+function updateNodeLinkDiagram(svg, datasetDropdown, threshold) {
   const selectedDataset = datasetDropdown.property("value");
   svg.selectAll("*").remove(); // Clear existing diagram
-  createNodeLinkDiagram(svg, selectedDataset);
+  createNodeLinkDiagram(svg, selectedDataset, threshold);
 }
+
+// Initial creation of node-link diagrams with default datasets and thresholds
+updateNodeLinkDiagram(svg1, d3.select("#datasetDropdown1"), 0);
+updateNodeLinkDiagram(svg2, d3.select("#datasetDropdown2"), 0);
 
 // Event listener for dataset dropdowns
 d3.select("#datasetDropdown1").on("change", function () {
-  updateNodeLinkDiagram(svg1, d3.select(this));
+  updateNodeLinkDiagram(
+    svg1,
+    d3.select(this),
+    d3.select("#nodeSizeSlider1").property("value")
+  );
 });
 
 d3.select("#datasetDropdown2").on("change", function () {
-  updateNodeLinkDiagram(svg2, d3.select(this));
+  updateNodeLinkDiagram(
+    svg2,
+    d3.select(this),
+    d3.select("#nodeSizeSlider2").property("value")
+  );
+});
+
+// Event listener for threshold sliders
+d3.select("#nodeSizeSlider1").on("input", function () {
+  const filterValue = +this.value;
+  // Update the visualization with the new filter value
+  updateNodeLinkDiagram(svg1, d3.select("#datasetDropdown1"), filterValue);
+});
+
+d3.select("#nodeSizeSlider2").on("input", function () {
+  const filterValue = +this.value;
+  // Update the visualization with the new filter value
+  updateNodeLinkDiagram(svg2, d3.select("#datasetDropdown2"), filterValue);
 });
