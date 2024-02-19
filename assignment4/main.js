@@ -51,8 +51,33 @@ const svg2 = d3.select("#svg2");
 createDatasetOptions(d3.select("#datasetDropdown1"), defaultDatasets);
 createDatasetOptions(d3.select("#datasetDropdown2"), defaultDatasets);
 
+// Function to handle node click event
+function handleNodeClick(clickedNodeData, svg1, svg2) {
+  // Extract the name of the clicked node
+  const clickedNodeName = clickedNodeData.name;
+
+  // Define a class for highlighting
+  const highlightClass = "selected";
+
+  // Function to highlight nodes by name
+  const highlightNode = (svg, nodeName) => {
+    svg.selectAll(".nodes circle").each(function (d) {
+      if (d.name === nodeName) {
+        d3.select(this).classed(highlightClass, true);
+      } else {
+        d3.select(this).classed(highlightClass, false);
+      }
+    });
+  };
+
+  // Highlight the clicked node in both SVG elements
+  highlightNode(svg1, clickedNodeName);
+  highlightNode(svg2, clickedNodeName);
+}
+
 // Function to create node-link diagram
-function createNodeLinkDiagram(svg, datasetUrl, threshold) {
+function createNodeLinkDiagram(svg, datasetUrl, threshold, svg1, svg2) {
+  console.log("Creating node-link diagram:", svg);
   d3.json(datasetUrl).then(function (data) {
     // Extract nodes and links from the data
     const nodes = data.nodes.filter((d) => d.value > threshold);
@@ -99,7 +124,11 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
           .on("start", dragstarted)
           .on("drag", dragged)
           .on("end", dragended)
-      );
+      )
+      .on("click", function (event, d) {
+        console.log("Node clicked:", d);
+        handleNodeClick(d, svg1, svg2);
+      });
 
     // Add labels to the nodes
     const label = svg
@@ -146,22 +175,24 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
 }
 
 // Function to update node-link diagram based on selected dataset and threshold
-function updateNodeLinkDiagram(svg, datasetDropdown, threshold) {
+function updateNodeLinkDiagram(svg, datasetDropdown, threshold, svg1, svg2) {
   const selectedDataset = datasetDropdown.property("value");
   svg.selectAll("*").remove(); // Clear existing diagram
-  createNodeLinkDiagram(svg, selectedDataset, threshold);
+  createNodeLinkDiagram(svg, selectedDataset, threshold, svg1, svg2);
 }
 
 // Initial creation of node-link diagrams with default datasets and thresholds
-updateNodeLinkDiagram(svg1, d3.select("#datasetDropdown1"), 0);
-updateNodeLinkDiagram(svg2, d3.select("#datasetDropdown2"), 0);
+updateNodeLinkDiagram(svg1, d3.select("#datasetDropdown1"), 0, svg1, svg2);
+updateNodeLinkDiagram(svg2, d3.select("#datasetDropdown2"), 0, svg1, svg2);
 
 // Event listener for dataset dropdowns
 d3.select("#datasetDropdown1").on("change", function () {
   updateNodeLinkDiagram(
     svg1,
     d3.select(this),
-    d3.select("#nodeSizeSlider1").property("value")
+    d3.select("#nodeSizeSlider1").property("value"),
+    svg1,
+    svg2
   );
 });
 
@@ -169,7 +200,9 @@ d3.select("#datasetDropdown2").on("change", function () {
   updateNodeLinkDiagram(
     svg2,
     d3.select(this),
-    d3.select("#nodeSizeSlider2").property("value")
+    d3.select("#nodeSizeSlider2").property("value"),
+    svg1,
+    svg2
   );
 });
 
@@ -177,11 +210,23 @@ d3.select("#datasetDropdown2").on("change", function () {
 d3.select("#nodeSizeSlider1").on("input", function () {
   const filterValue = +this.value;
   // Update the visualization with the new filter value
-  updateNodeLinkDiagram(svg1, d3.select("#datasetDropdown1"), filterValue);
+  updateNodeLinkDiagram(
+    svg1,
+    d3.select("#datasetDropdown1"),
+    filterValue,
+    svg1,
+    svg2
+  );
 });
 
 d3.select("#nodeSizeSlider2").on("input", function () {
   const filterValue = +this.value;
   // Update the visualization with the new filter value
-  updateNodeLinkDiagram(svg2, d3.select("#datasetDropdown2"), filterValue);
+  updateNodeLinkDiagram(
+    svg2,
+    d3.select("#datasetDropdown2"),
+    filterValue,
+    svg1,
+    svg2
+  );
 });
