@@ -144,44 +144,55 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
     }
   });
 }
-
 // Function to update node-link diagram based on selected dataset and threshold
-function updateNodeLinkDiagram(svg, datasetDropdown, threshold) {
-  const selectedDataset = datasetDropdown.property("value");
+function updateNodeLinkDiagram(svg, datasetUrl, threshold) {
   svg.selectAll("*").remove(); // Clear existing diagram
-  createNodeLinkDiagram(svg, selectedDataset, threshold);
+  createNodeLinkDiagram(svg, datasetUrl, threshold);
 }
-
 // Initial creation of node-link diagrams with default datasets and thresholds
-updateNodeLinkDiagram(svg1, d3.select("#datasetDropdown1"), 0);
-updateNodeLinkDiagram(svg2, d3.select("#datasetDropdown2"), 0);
+updateNodeLinkDiagram(
+  svg1,
+  "data/starwars-full-interactions-allCharacters.json",
+  0
+);
+updateNodeLinkDiagram(
+  svg2,
+  "data/starwars-full-interactions-allCharacters.json",
+  0
+);
 
 // Event listener for dataset dropdowns
 d3.select("#datasetDropdown1").on("change", function () {
-  updateNodeLinkDiagram(
-    svg1,
-    d3.select(this),
-    d3.select("#nodeSizeSlider1").property("value")
-  );
+  const selectedDataset = d3.select(this).property("value");
+  const threshold = +d3.select("#nodeSizeSlider1").property("value");
+  updateNodeLinkDiagram(svg1, selectedDataset, threshold);
 });
 
 d3.select("#datasetDropdown2").on("change", function () {
-  updateNodeLinkDiagram(
-    svg2,
-    d3.select(this),
-    d3.select("#nodeSizeSlider2").property("value")
-  );
+  const selectedDataset = d3.select(this).property("value");
+  const threshold = +d3.select("#nodeSizeSlider2").property("value");
+  updateNodeLinkDiagram(svg2, selectedDataset, threshold);
 });
+
+// Function to update node-link diagram based on threshold slider value
+function updateThreshold(svg, threshold) {
+  const nodes = svg.selectAll(".nodes circle");
+  const labels = svg.selectAll(".labels text");
+  labels.attr("display", function (d) {
+    return d.value > threshold ? "block" : "none";
+  });
+  nodes.attr("display", function (d) {
+    return d.value > threshold ? "block" : "none";
+  });
+}
 
 // Event listener for threshold sliders
 d3.select("#nodeSizeSlider1").on("input", function () {
   const filterValue = +this.value;
-  // Update the visualization with the new filter value
-  updateNodeLinkDiagram(svg1, d3.select("#datasetDropdown1"), filterValue);
+  updateThreshold(svg1, filterValue);
 });
 
 d3.select("#nodeSizeSlider2").on("input", function () {
   const filterValue = +this.value;
-  // Update the visualization with the new filter value
-  updateNodeLinkDiagram(svg2, d3.select("#datasetDropdown2"), filterValue);
+  updateThreshold(svg2, filterValue);
 });
