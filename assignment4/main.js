@@ -128,19 +128,15 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
     const nodes = data.nodes.filter((d) => d.value > threshold);
     const links = data.links;
 
-    // Initialize the simulation
     const simulation = d3
       .forceSimulation(nodes)
-      .force(
-        "link",
-        d3.forceLink(links).id((d) => d.index)
-      )
-      .force("charge", d3.forceManyBody().strength(-100))
+      .force("collide", d3.forceCollide().radius(30))
+      .force("link", d3.forceLink().links(links).distance(5))
+      .force("charge", d3.forceManyBody().strength(-50))
       .force(
         "center",
-        d3.forceCenter(svg.attr("width") / 2, svg.attr("height") / 2)
+        d3.forceCenter(+svg.attr("width") / 2, +svg.attr("height") / 2)
       );
-
     // Create the links
     const link = svg
       .append("g")
@@ -287,10 +283,12 @@ function updateThreshold(svg, threshold) {
 // Event listener for threshold sliders
 d3.select("#nodeSizeSlider1").on("input", function () {
   const filterValue = +this.value;
+  nodeSizeValue1.innerText = filterValue;
   updateThreshold(svg1, filterValue);
 });
 
 d3.select("#nodeSizeSlider2").on("input", function () {
   const filterValue = +this.value;
+  nodeSizeValue2.innerText = filterValue;
   updateThreshold(svg2, filterValue);
 });
