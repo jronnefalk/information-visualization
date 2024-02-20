@@ -56,7 +56,7 @@ function updateSharedInfoPanel(name = "", value = "", color = "") {
   document.getElementById("info-name").textContent = name;
   document.getElementById("info-value").textContent = value;
   document.getElementById("info-color").style.backgroundColor = color;
-  document.getElementById("info-color").textContent = color ? "" : "N/A"; // Clear color text if no color
+  document.getElementById("info-color").textContent = color ? "" : "N/A";
 }
 
 // Update the shared information panel (links)
@@ -182,16 +182,16 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
           .on("end", dragended)
       );
 
-    // Add labels to the nodes
-    const label = svg
-      .append("g")
-      .attr("class", "labels")
-      .selectAll("text")
-      .data(nodes)
-      .enter()
-      .append("text")
-      .attr("dy", ".35em")
-      .text((d) => d.name);
+    // // Add labels to the nodes
+    // const label = svg
+    //   .append("g")
+    //   .attr("class", "labels")
+    //   .selectAll("text")
+    //   .data(nodes)
+    //   .enter()
+    //   .append("text")
+    //   .attr("dy", ".35em")
+    //   .text((d) => d.name);
 
     // Force simulation tick update
     simulation.on("tick", () => {
@@ -202,7 +202,7 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
         .attr("y2", (d) => d.target.y);
 
       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-      label.attr("x", (d) => d.x + 5).attr("y", (d) => d.y + 5);
+      //label.attr("x", (d) => d.x + 5).attr("y", (d) => d.y + 5);
     });
 
     // Drag event handlers
