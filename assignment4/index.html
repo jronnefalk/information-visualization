@@ -3,37 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multiple Node-Link Diagrams with Controls</title>
+    <title>Node-Link Diagrams with Dynamic Info Panels</title>
     <style>
         .diagram-container {
             display: inline-block;
             margin-right: 20px;
             vertical-align: top;
         }
-        #controls {
+        .controls {
             margin-bottom: 20px;
             padding: 10px;
             background-color: #f9f9f9;
             border-radius: 5px;
             box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
-        #controls label {
+        .controls label {
             display: block;
             margin-bottom: 10px;
         }
-        #controls select, #controls input[type="range"] {
+        .controls select, .controls input[type="range"] {
             width: 100%;
         }
         svg {
             border: 1px solid #ccc;
         }
-        .nodes .selected {
+        .nodes circle.selected {
             stroke: #000;
             stroke-width: 2px;
         }
         .labels {
             font-family: Arial;
             font-size: 9px;
+            fill: #333;
+        }
+        .info-panel {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .info-panel text {
+            font-family: Arial;
+            font-size: 12px;
             fill: #333;
         }
     </style>
@@ -59,9 +71,15 @@
         <svg id="svg2" width="800" height="800"></svg>
     </div>
 
+    <div class="info-panel" id="shared-info-panel">
+        <p>Name: <span id="info-name"></span></p>
+        <p>Value: <span id="info-value"></span></p>
+        <p>Color: <span id="info-color" style="width: 20px; height: 20px; display: inline-block;"></span></p>
+    </div>
+
     <!-- Load D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <!-- Load our custom JavaScript -->
+    <!-- Your JavaScript code goes here or link to your JavaScript file -->
     <script src="main.js"></script>
 </body>
 </html>
