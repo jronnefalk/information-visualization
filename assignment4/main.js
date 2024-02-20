@@ -51,12 +51,36 @@ const svg2 = d3.select("#svg2");
 createDatasetOptions(d3.select("#datasetDropdown1"), defaultDatasets);
 createDatasetOptions(d3.select("#datasetDropdown2"), defaultDatasets);
 
-// Update the shared information panel
+// Update the shared information panel (nodes)
 function updateSharedInfoPanel(name = "", value = "", color = "") {
   document.getElementById("info-name").textContent = name;
   document.getElementById("info-value").textContent = value;
   document.getElementById("info-color").style.backgroundColor = color;
   document.getElementById("info-color").textContent = color ? "" : "N/A"; // Clear color text if no color
+}
+
+// Update the shared information panel (links)
+function updateLinkInfoPanel(source = "", target = "", value = "") {
+  document.getElementById("link-source").textContent = source || "";
+  document.getElementById("link-target").textContent = target || "";
+  document.getElementById("link-value").textContent = value || "";
+}
+
+function highlightLinkInBothDiagrams(sourceName, targetName, highlight = true) {
+  [svg1, svg2].forEach((svg) => {
+    svg
+      .selectAll(".links line")
+      .filter(
+        (d) => d.source.name === sourceName && d.target.name === targetName
+      )
+      .each(function (d) {
+        d3.select(this)
+          .transition()
+          .duration(150)
+          .attr("stroke", highlight ? "#000" : "#999") // Toggle color
+          .attr("stroke-width", highlight ? 3 : Math.sqrt(d.value)); // Toggle width based on 'd.value'
+      });
+  });
 }
 
 function resizeNodeInBothDiagrams(nodeName, newSize) {
@@ -127,7 +151,15 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
       .append("line")
       .attr("stroke", "#999")
       .attr("stroke-opacity", 0.6)
-      .attr("stroke-width", (d) => Math.sqrt(d.value));
+      .attr("stroke-width", (d) => Math.sqrt(d.value))
+      .on("mouseover", function (event, d) {
+        highlightLinkInBothDiagrams(d.source.name, d.target.name, true);
+        updateLinkInfoPanel(d.source.name, d.target.name, d.value);
+      })
+      .on("mouseout", function (event, d) {
+        highlightLinkInBothDiagrams(d.source.name, d.target.name, false);
+        updateLinkInfoPanel();
+      });
 
     // Create the nodes
     const node = svg
