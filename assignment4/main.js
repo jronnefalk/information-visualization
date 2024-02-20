@@ -51,39 +51,60 @@ const svg2 = d3.select("#svg2");
 createDatasetOptions(d3.select("#datasetDropdown1"), defaultDatasets);
 createDatasetOptions(d3.select("#datasetDropdown2"), defaultDatasets);
 
-// Function to handle node click event
-function handleNodeClick(clickedNodeData, svg1, svg2) {
-  // Extract the name of the clicked node
-  const clickedNodeName = clickedNodeData.name;
-
-  // Define a class for highlighting
-  const highlightClass = "selected";
-
-  // Function to highlight nodes by name
-  const highlightNode = (svg, nodeName) => {
-    svg.selectAll(".nodes circle").each(function (d) {
-      if (d.name === nodeName) {
-        d3.select(this).classed(highlightClass, true);
-      } else {
-        d3.select(this).classed(highlightClass, false);
-      }
-    });
-  };
-
-  // Highlight the clicked node in both SVG elements
-  highlightNode(svg1, clickedNodeName);
-  highlightNode(svg2, clickedNodeName);
+// Update the shared information panel
+function updateSharedInfoPanel(name = "", value = "", color = "") {
+  document.getElementById("info-name").textContent = name;
+  document.getElementById("info-value").textContent = value;
+  document.getElementById("info-color").style.backgroundColor = color;
+  document.getElementById("info-color").textContent = color ? "" : "N/A"; // Clear color text if no color
 }
 
-// Function to create node-link diagram
-function createNodeLinkDiagram(svg, datasetUrl, threshold, svg1, svg2) {
-  console.log("Creating node-link diagram:", svg);
+function resizeNodeInBothDiagrams(nodeName, newSize) {
+  [svg1, svg2].forEach((svg) => {
+    svg
+      .selectAll(".nodes circle")
+      .filter((d) => d.name === nodeName)
+      .transition()
+      .duration(150)
+      .attr("r", (d) =>
+        newSize ? Math.sqrt(d.value) * newSize : Math.sqrt(d.value) * 2
+      );
+  });
+}
+
+function createInfoPanel(svg) {
+  // Create a group for the info panel
+  const infoPanel = svg
+    .append("g")
+    .attr("class", "info-panel")
+    .attr("transform", "translate(10,20)"); // Position it in the top left corner
+
+  // Add text elements for Name, Value, and Color
+  infoPanel.append("text").attr("id", "info-name").attr("y", 0).text("Name:");
+  infoPanel
+    .append("text")
+    .attr("id", "info-value")
+    .attr("y", 20)
+    .text("Value:");
+  infoPanel
+    .append("text")
+    .attr("id", "info-color")
+    .attr("y", 40)
+    .text("Color:");
+}
+
+// Initialize the info panels right after creating the SVG elements
+createInfoPanel(svg1);
+createInfoPanel(svg2);
+
+// Function to create node-link diagram with hover and drag functionalities
+function createNodeLinkDiagram(svg, datasetUrl, threshold) {
   d3.json(datasetUrl).then(function (data) {
     // Extract nodes and links from the data
     const nodes = data.nodes.filter((d) => d.value > threshold);
     const links = data.links;
 
-    // Create the simulation
+    // Initialize the simulation
     const simulation = d3
       .forceSimulation(nodes)
       .force(
@@ -93,7 +114,7 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold, svg1, svg2) {
       .force("charge", d3.forceManyBody().strength(-100))
       .force(
         "center",
-        d3.forceCenter(+svg.attr("width") / 2, +svg.attr("height") / 2)
+        d3.forceCenter(svg.attr("width") / 2, svg.attr("height") / 2)
       );
 
     // Create the links
@@ -116,19 +137,22 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold, svg1, svg2) {
       .data(nodes)
       .enter()
       .append("circle")
-      .attr("r", (d) => Math.sqrt(d.value) * 2)
+      .attr("r", (d) => Math.sqrt(d.value) * 2) // Set initial radius based on node's value
       .attr("fill", (d) => d.colour)
+      .on("mouseover", function (event, d) {
+        resizeNodeInBothDiagrams(d.name, 3); // Attempt to resize nodes in both diagrams
+        updateSharedInfoPanel(d.name, d.value, d.colour); // Update info panel
+      })
+      .on("mouseout", function (event, d) {
+        resizeNodeInBothDiagrams(d.name, null); // Attempt to restore original size in both diagrams
+      })
       .call(
         d3
-          .drag()
+          .drag() // Enable drag functionality
           .on("start", dragstarted)
           .on("drag", dragged)
           .on("end", dragended)
-      )
-      .on("click", function (event, d) {
-        console.log("Node clicked:", d);
-        handleNodeClick(d, svg1, svg2);
-      });
+      );
 
     // Add labels to the nodes
     const label = svg
@@ -141,7 +165,7 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold, svg1, svg2) {
       .attr("dy", ".35em")
       .text((d) => d.name);
 
-    // Apply the forces
+    // Force simulation tick update
     simulation.on("tick", () => {
       link
         .attr("x1", (d) => d.source.x)
@@ -150,11 +174,10 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold, svg1, svg2) {
         .attr("y2", (d) => d.target.y);
 
       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-
-      label.attr("x", (d) => d.x + 5).attr("y", (d) => d.y);
+      label.attr("x", (d) => d.x + 5).attr("y", (d) => d.y + 5);
     });
 
-    // Drag handlers
+    // Drag event handlers
     function dragstarted(event, d) {
       if (!event.active) simulation.alphaTarget(0.3).restart();
       d.fx = d.x;
@@ -173,6 +196,7 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold, svg1, svg2) {
     }
   });
 }
+
 // Function to update node-link diagram based on selected dataset and threshold
 function updateNodeLinkDiagram(svg, datasetDropdown, threshold, svg1, svg2) {
   const selectedDataset = datasetDropdown.property("value");
