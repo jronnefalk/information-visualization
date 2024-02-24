@@ -3,57 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Node-Link Diagrams with Dynamic Info Panels</title>
+    <title>Stars Wars Episodes Visualization</title>
     <style>
         body {
+            font-family: "Lexend Deca", sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-image: url("space.jpg");
             display: flex;
             justify-content: center;
-            align-items: flex-start;
             flex-wrap: wrap;
+            gap: 40px;
+        }
+        .graph-info-container {
+            display: flex;
             gap: 20px;
+            align-items: start;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            justify-content: center; 
+            overflow: hidden; 
+
         }
         .diagram-container {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 20px;
+            gap: 10px;
+            align-items: center; 
+            flex-grow: 1; 
+            
         }
-        .diagram-container h2 {
-            font-family: "Lexend Deca", sans-serif;
-            font-size: 40px;
-            color: #333;
-            margin-bottom: 10px;
+
+        .panels-container, .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 55px 0;
         }
-        .diagram-container label {
-            font-family: "Lexend Deca", sans-serif;
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .controls {
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-            margin-bottom: 10px;
-        }
-        .controls label {
-            margin-bottom: 10px;
-        }
-        .controls select, .controls input[type="range"] {
-            width: 100%;
-        }
-        svg {
+
+        .diagram-container svg {
+            width: 800px; 
+            height: 800px; 
             border: 1px solid #ccc;
         }
         .info-panel {
             padding: 10px;
-            background-color: #f9f9f9;
+            background-color: #d7d7d7;
             border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-            width: 800px; /* Match SVG width */
-            font-family: "Lexend Deca", sans-serif;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+            width: 250px; 
             font-size: 16px;
+        }
+        h3 {
+            margin: 0;
+            text-align: left;
+        }
+        h2 {
+            font-size: 36px;
+            margin: 0;
+            text-align: center;
+        }
+        label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+            margin: 6px;
         }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -61,58 +77,66 @@
     <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="diagram-container">
-        <h2>Graph 1</h2>
-        <svg id="svg1" width="800" height="700"></svg>
-        <div id="controls1" class="controls">
-            <label for="datasetDropdown1">Dataset:</label>
-            <select id="datasetDropdown1"></select>
-            <label for="nodeSizeSlider1">Node Size Threshold:<span id="nodeSizeValue1">0</span></label>
-            <input type="range" id="nodeSizeSlider1" min="0" max="180" step="1" value="0">
-            <label for="strengthSlider1">Strength:</label>
-            <input type="range" id="strengthSlider1" min="0" max="100" step="0.01" value="0">
+    <div class="graph-info-container">
+        <div class="panels-container">
+            <h3>Node Information</h3>
+            <div id="info-panel1" class="info-panel">
+                <p>Name: <span id="info-name1"></span></p>
+                <p>Value: <span id="info-value1"></span></p>
+            </div>
+            <h3>Link Information</h3>
+            <div class="info-panel" id="link-info-panel1">
+                <p>Source: <span id="link-source1"></span></p>
+                <p>Target: <span id="link-target1"></span></p>
+                <p>Value: <span id="link-value1"></span></p>
+            </div>
+            <div id="controls1" class="controls">
+                <label for="datasetDropdown1">Dataset: </label>
+                <select id="datasetDropdown1"></select>
+                <label for="nodeSizeSlider1">Node Size Threshold:<span id="nodeSizeValue1">0</span></label>
+                <input type="range" id="nodeSizeSlider1" min="0" max="180" step="1" value="0">
+                <label for="strengthSlider1">Strength:</label>
+                <input type="range" id="strengthSlider1" min="0" max="100" step="0.01" value="0">
+            </div>
         </div>
-        <div id="info-panel1" class="info-panel">
-            <p>Name: <span id="info-name1"></span></p>
-            <p>Value: <span id="info-value1"></span></p>
-            <p>Color: <span id="info-color1" style="display: inline-block;"></span></p>
-        </div>
-        <!-- Link Info Panel for Graph 1 -->
-        <div class="info-panel" id="link-info-panel1">
-            <p>Source: <span id="link-source1"></span></p>
-            <p>Target: <span id="link-target1"></span></p>
-            <p>Value: <span id="link-value1"></span></p>
-        </div>
-
-    </div>
-
-    <div class="diagram-container">
-        <h2>Graph 2</h2>
-        <svg id="svg2" width="800" height="700"></svg>
-        <div id="controls2" class="controls">
-            <label for="datasetDropdown2">Dataset:</label>
-            <select id="datasetDropdown2"></select>
-            <label for="nodeSizeSlider2">Node Size Threshold: <span id="nodeSizeValue2">0</span></label>
-            <input type="range" id="nodeSizeSlider2" min="0" max="180" step="1" value="0">
-            <label for="strengthSlider2">Strength: </label>
-            <input type="range" id="strengthSlider2" min="0" max="100" step="0.01" value="0">
-        </div>
-        <div id="info-panel2" class="info-panel">
-            <p>Name: <span id="info-name2"></span></p>
-            <p>Value: <span id="info-value2"></span></p>
-            <p>Color: <span id="info-color2" style="display: inline-block;"></span></p>
-        </div>
-        <div class="info-panel" id="link-info-panel2">
-            <p>Source: <span id="link-source2"></span></p>
-            <p>Target: <span id="link-target2"></span></p>
-            <p>Value: <span id="link-value2"></span></p>
+        <div class="diagram-container">
+            <h2>Graph 1</h2>
+            <svg id="svg1" width="800" height="800"></svg>
         </div>
     </div>
 
-    <!-- Load D3.js -->
+    <div class="graph-info-container">
+        <div class="panels-container">
+            <h3>Node Information</h3>
+            <div id="info-panel2" class="info-panel">
+                <p>Name: <span id="info-name2"></span></p>
+                <p>Value: <span id="info-value2"></span></p>
+            </div>
+            <h3>Link Information</h3>
+            <div class="info-panel" id="link-info-panel2">
+                <p>Source: <span id="link-source2"></span></p>
+                <p>Target: <span id="link-target2"></span></p>
+                <p>Value: <span id="link-value2"></span></p>
+            </div>
+            <div id="controls2" class="controls">
+                <label for="datasetDropdown2">Dataset: </label>
+                <select id="datasetDropdown2"></select>
+                <label for="nodeSizeSlider2">Node Size Threshold: <span id="nodeSizeValue2">0</span></label>
+                <input type="range" id="nodeSizeSlider2" min="0" max="180" step="1" value="0">
+                <label for="strengthSlider2">Strength: </label>
+                <input type="range" id="strengthSlider2" min="0" max="100" step="0.01" value="0">
+            </div>
+        </div>
+        <div class="diagram-container">
+            <h2>Graph 2</h2>
+            <svg id="svg2" width="800" height="800"></svg>
+        </div>
+    </div>
+
     <script src="https://d3js.org/d3.v7.min.js"></script>
-
-    <!-- Your JavaScript code goes here or link to your JavaScript file -->
     <script src="main.js"></script>
 </body>
 </html>
+
+
+
