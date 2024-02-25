@@ -426,11 +426,13 @@ function updateThreshold(svg, threshold) {
 // Event listener for threshold sliders
 d3.select("#nodeSizeSlider1").on("input", function () {
   const filterValue = +this.value;
+  nodeSizeValue1.innerText = filterValue;
   updateThreshold(svg1, filterValue);
 });
 
 d3.select("#nodeSizeSlider2").on("input", function () {
   const filterValue = +this.value;
+  nodeSizeValue2.innerText = filterValue;
   updateThreshold(svg2, filterValue);
 });
 
