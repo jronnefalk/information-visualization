@@ -49,8 +49,13 @@ function createDatasetOptions(selectElement, datasets) {
 }
 
 // Load default datasets
-const svg1 = d3.select("#svg1");
-const svg2 = d3.select("#svg2");
+// Initialize SVGs for zoom functionality directly
+const svg1 = d3.select("#svg1"),
+  g1 = svg1.append("g");
+
+const svg2 = d3.select("#svg2"),
+  g2 = svg2.append("g");
+
 createDatasetOptions(d3.select("#datasetDropdown1"), defaultDatasets);
 createDatasetOptions(d3.select("#datasetDropdown2"), defaultDatasets);
 
@@ -122,6 +127,25 @@ function resizeNodeInBothDiagrams(nodeName, newSizeFactor) {
   });
 }
 
+// Define zoom behaviors for each graph
+const zoom1 = d3
+  .zoom()
+  .scaleExtent([0.5, 10]) // Set the scale extent for zooming
+  .on("zoom", function (event) {
+    g1.attr("transform", event.transform); // Apply zoom & pan
+  });
+
+const zoom2 = d3
+  .zoom()
+  .scaleExtent([0.5, 10])
+  .on("zoom", function (event) {
+    g2.attr("transform", event.transform);
+  });
+
+// Apply the zoom behavior to the SVG elements
+svg1.call(zoom1);
+svg2.call(zoom2);
+
 // Click outside to clear selections and info panels
 d3.select("body").on(
   "click",
@@ -135,33 +159,8 @@ d3.select("body").on(
   true
 );
 
-function createInfoPanel(svg) {
-  // Create a group for the info panel
-  const infoPanel = svg
-    .append("g")
-    .attr("class", "info-panel")
-    .attr("transform", "translate(10,20)"); // Position it in the top left corner
-
-  // Add text elements for Name, Value, and Color
-  infoPanel.append("text").attr("id", "info-name").attr("y", 0).text("Name:");
-  infoPanel
-    .append("text")
-    .attr("id", "info-value")
-    .attr("y", 20)
-    .text("Value:");
-  infoPanel
-    .append("text")
-    .attr("id", "info-color")
-    .attr("y", 40)
-    .text("Color:");
-}
-
-// Initialize the info panels right after creating the SVG elements
-createInfoPanel(svg1);
-createInfoPanel(svg2);
-
 // Function to create node-link diagram with hover and drag functionalities
-function createNodeLinkDiagram(svg, datasetUrl, threshold) {
+function createNodeLinkDiagram(svg, g, datasetUrl, threshold) {
   d3.json(datasetUrl).then(function (data) {
     // Extract nodes and links from the data
     const nodes = data.nodes.filter((d) => d.value > threshold);
@@ -181,7 +180,7 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
       );
 
     // Create the links
-    const link = svg
+    const link = g
       .append("g")
       .attr("class", "links")
       .selectAll("line")
@@ -209,7 +208,7 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
           highlightLinkInBothDiagrams(d.source.name, d.target.name, true); // Assuming you have this function implemented
           updateLinkInfoPanelGraph2(d.source.name, d.target.name, d.value);
         } else {
-          updateLinkInfoPanelGraph2("This link does not exist here", "", "");
+          updateLinkInfoPanelGraph2("Link does not exist here", "", "");
         }
       })
       .on("mouseout", function (event, d) {
@@ -219,7 +218,7 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
       });
 
     // Create the nodes
-    const node = svg
+    const node = g
       .append("g")
       .attr("class", "nodes")
       .selectAll("circle")
@@ -243,21 +242,6 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
       .on("mouseout", function (event, d) {
         resizeNodeInBothDiagrams(d.name, 2); // Shrink node
       });
-    // .on("click", function (event, d) {
-    //   event.stopPropagation(); // Prevent the body click event
-    //   // Toggle selection state
-    //   if (selectedNode === d) {
-    //     selectedNode = null; // Deselect node
-    //     updateSharedInfoPanel("Node does not exist here", "", ""); // Clear info panel
-    //     highlightNode(svg1, null, false);
-    //     highlightNode(svg2, null, false);
-    //   } else {
-    //     selectedNode = d; // Update selected node
-    //     updateSharedInfoPanel(d.name, d.value, d.colour); // Update info panel
-    //     highlightNode(svg1, d.name, true); // Apply border
-    //     highlightNode(svg2, d.name, true); // Apply border
-    //   }
-    // });
 
     // Inside createNodeLinkDiagram function for each svg
     node.on("click", function (event, d) {
@@ -300,17 +284,6 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
       );
     });
 
-    // // Add labels to the nodes
-    // const label = svg
-    //   .append("g")
-    //   .attr("class", "labels")
-    //   .selectAll("text")
-    //   .data(nodes)
-    //   .enter()
-    //   .append("text")
-    //   .attr("dy", ".35em")
-    //   .text((d) => d.name);
-
     // Force simulation tick update
     simulation.on("tick", () => {
       link
@@ -320,7 +293,6 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
         .attr("y2", (d) => d.target.y);
 
       node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-      //label.attr("x", (d) => d.x + 5).attr("y", (d) => d.y + 5);
     });
 
     // Drag event handlers
@@ -344,33 +316,32 @@ function createNodeLinkDiagram(svg, datasetUrl, threshold) {
 }
 
 // Function to update node-link diagram based on selected dataset and threshold
-function updateNodeLinkDiagram(svg, datasetDropdown, threshold, svg1, svg2) {
+function updateNodeLinkDiagram(svg, g, datasetDropdown, threshold) {
   const selectedDataset = datasetDropdown.property("value");
-  svg.selectAll("*").remove(); // Clear existing diagram
-  createNodeLinkDiagram(svg, selectedDataset, threshold, svg1, svg2);
+  g.selectAll("*").remove(); // Clear existing diagram elements from 'g'
+  createNodeLinkDiagram(svg, g, selectedDataset, threshold);
 }
+
 // Initial creation of node-link diagrams with default datasets and thresholds
-updateNodeLinkDiagram(svg1, d3.select("#datasetDropdown1"), 0, svg1, svg2);
-updateNodeLinkDiagram(svg2, d3.select("#datasetDropdown2"), 0, svg1, svg2);
+updateNodeLinkDiagram(svg1, g1, d3.select("#datasetDropdown1"), 0);
+updateNodeLinkDiagram(svg2, g2, d3.select("#datasetDropdown2"), 0);
 
 // Event listener for dataset dropdowns
 d3.select("#datasetDropdown1").on("change", function () {
   updateNodeLinkDiagram(
     svg1,
-    d3.select(this),
-    d3.select("#nodeSizeSlider1").property("value"),
-    svg1,
-    svg2
+    g1,
+    d3.select("#datasetDropdown1"),
+    d3.select("#nodeSizeSlider1").property("value")
   );
 });
 
 d3.select("#datasetDropdown2").on("change", function () {
   updateNodeLinkDiagram(
     svg2,
-    d3.select(this),
-    d3.select("#nodeSizeSlider2").property("value"),
-    svg1,
-    svg2
+    g2,
+    d3.select("#datasetDropdown2"),
+    d3.select("#nodeSizeSlider2").property("value")
   );
 });
 
@@ -407,4 +378,15 @@ d3.select("#nodeSizeSlider1").on("input", function () {
 d3.select("#nodeSizeSlider2").on("input", function () {
   const filterValue = +this.value;
   updateThreshold(svg2, filterValue);
+});
+
+// Connect zoom sliders to zoom behaviors
+d3.select("#zoomSlider1").on("input", function () {
+  const zoomLevel = parseFloat(d3.select(this).property("value"));
+  svg1.transition().duration(500).call(zoom1.scaleTo, zoomLevel);
+});
+
+d3.select("#zoomSlider2").on("input", function () {
+  const zoomLevel = parseFloat(d3.select(this).property("value"));
+  svg2.transition().duration(500).call(zoom2.scaleTo, zoomLevel);
 });
