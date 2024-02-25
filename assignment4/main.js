@@ -160,8 +160,6 @@ d3.select("body").on(
 );
 
 // Initialize the info panels right after creating the SVG elements
-createInfoPanel(svg1);
-createInfoPanel(svg2);
 var simulation1;
 var simulation2;
 
@@ -176,9 +174,8 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold) {
     if (svg === svg1) {
       simulation1 = d3
         .forceSimulation(nodes)
-        .force("collide", d3.forceCollide().radius(30))
         .force("link", d3.forceLink().links(links).distance(5))
-        .force("charge", d3.forceManyBody().strength(-50))
+        .force("charge", d3.forceManyBody().strength(-100))
         .force(
           "center",
           d3.forceCenter(+svg.attr("width") / 2, +svg.attr("height") / 2)
@@ -186,14 +183,44 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold) {
     } else {
       simulation2 = d3
         .forceSimulation(nodes)
-        .force("collide", d3.forceCollide().radius(30))
         .force("link", d3.forceLink().links(links).distance(5))
-        .force("charge", d3.forceManyBody().strength(-50))
+        .force("charge", d3.forceManyBody().strength(-100))
         .force(
           "center",
           d3.forceCenter(+svg.attr("width") / 2, +svg.attr("height") / 2)
         );
     }
+
+    // Drag event handlers
+    function dragstarted(event, d) {
+      if (!event.active) {
+        if (svg === svg1) {
+          simulation1.alphaTarget(0.3).restart();
+        } else if (svg === svg2) {
+          simulation2.alphaTarget(0.3).restart();
+        }
+      }
+      d.fx = d.x;
+      d.fy = d.y;
+    }
+
+    function dragged(event, d) {
+      d.fx = event.x;
+      d.fy = event.y;
+    }
+
+    function dragended(event, d) {
+      if (!event.active) {
+        if (svg === svg1) {
+          simulation1.alphaTarget(0);
+        } else if (svg === svg2) {
+          simulation2.alphaTarget(0);
+        }
+      }
+      d.fx = null;
+      d.fy = null;
+    }
+
     // Create the links
     const link = g
       .append("g")
@@ -318,40 +345,12 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold) {
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
 
-      node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-    });
-
-    // Drag event handlers
-    function dragstarted(event, d) {
-      if (!event.active) {
-        if (svg === svg1) {
-          simulation1.alphaTarget(0.3).restart();
-        } else if (svg === svg2) {
-          simulation2.alphaTarget(0.3).restart();
-        }
-      }
-      d.fx = d.x;
-      d.fy = d.y;
-    }
-
-    function dragged(event, d) {
-      d.fx = event.x;
-      d.fy = event.y;
-    }
-
-    function dragended(event, d) {
-      if (!event.active) {
-        if (svg === svg1) {
-          simulation1.alphaTarget(0);
-        } else if (svg === svg2) {
-          simulation2.alphaTarget(0);
-        }
-      }
-      d.fx = null;
-      d.fy = null;
+        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+      });
     }
   });
 }
+
 d3.select("#strengthSlider1").on("input", function () {
   const chargeStrength = +this.value;
   strengthValue1.innerText = chargeStrength;
