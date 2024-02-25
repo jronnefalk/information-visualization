@@ -164,13 +164,14 @@ var simulation1;
 var simulation2;
 
 // Function to create node-link diagram with hover and drag functionalities
-function createNodeLinkDiagram(svg, g, datasetUrl, threshold) {
+function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
   var nodes;
   var links;
   d3.json(datasetUrl).then(function (data) {
     // Extract nodes and links from the data
-    nodes = data.nodes.filter((d) => d.value > threshold);
+    nodes = data.nodes;
     links = data.links;
+
     if (svg === svg1) {
       simulation1 = d3
         .forceSimulation(nodes)
@@ -284,7 +285,11 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold) {
       .on("mouseout", function (event, d) {
         resizeNodeInBothDiagrams(d.name, 2); // Shrink node
       });
-
+    updateThreshold(svg, threshold);
+    updateChargeStrength(
+      svg === svg1 ? simulation1 : simulation2,
+      chargeStrength
+    );
     // Inside createNodeLinkDiagram function for each svg
     node.on("click", function (event, d) {
       event.stopPropagation(); // Prevent body click event
@@ -370,15 +375,22 @@ function updateChargeStrength(simulation, chargeStrength) {
 }
 
 // Function to update node-link diagram based on selected dataset and threshold
-function updateNodeLinkDiagram(svg, g, datasetDropdown, threshold) {
+function updateNodeLinkDiagram(
+  svg,
+  g,
+  datasetDropdown,
+  threshold,
+  chargeStrength
+) {
   const selectedDataset = datasetDropdown.property("value");
   g.selectAll("*").remove(); // Clear existing diagram elements from 'g'
-  createNodeLinkDiagram(svg, g, selectedDataset, threshold);
+
+  createNodeLinkDiagram(svg, g, selectedDataset, threshold, chargeStrength);
 }
 
 // Initial creation of node-link diagrams with default datasets and thresholds
-updateNodeLinkDiagram(svg1, g1, d3.select("#datasetDropdown1"), 0);
-updateNodeLinkDiagram(svg2, g2, d3.select("#datasetDropdown2"), 0);
+updateNodeLinkDiagram(svg1, g1, d3.select("#datasetDropdown1"), 0, 0);
+updateNodeLinkDiagram(svg2, g2, d3.select("#datasetDropdown2"), 0, 0);
 
 // Event listener for dataset dropdowns
 d3.select("#datasetDropdown1").on("change", function () {
@@ -386,7 +398,8 @@ d3.select("#datasetDropdown1").on("change", function () {
     svg1,
     g1,
     d3.select("#datasetDropdown1"),
-    d3.select("#nodeSizeSlider1").property("value")
+    d3.select("#nodeSizeSlider1").property("value"),
+    d3.select("#strengthSlider1").property("value")
   );
 });
 
@@ -395,7 +408,8 @@ d3.select("#datasetDropdown2").on("change", function () {
     svg2,
     g2,
     d3.select("#datasetDropdown2"),
-    d3.select("#nodeSizeSlider2").property("value")
+    d3.select("#nodeSizeSlider2").property("value"),
+    d3.select("#strengthSlider2").property("value")
   );
 });
 
