@@ -48,8 +48,6 @@ function createDatasetOptions(selectElement, datasets) {
     .attr("value", (d) => d.url);
 }
 
-// Load default datasets
-// Initialize SVGs for zoom functionality directly
 const svg1 = d3.select("#svg1"),
   g1 = svg1.append("g");
 
@@ -59,24 +57,26 @@ const svg2 = d3.select("#svg2"),
 createDatasetOptions(d3.select("#datasetDropdown1"), defaultDatasets);
 createDatasetOptions(d3.select("#datasetDropdown2"), defaultDatasets);
 
-// Update the info panel for graph1
+// Info panel for graph1
 function updateInfoPanelGraph1(name, value) {
   document.getElementById("info-name1").textContent = name || "";
   document.getElementById("info-value1").textContent = value || "";
 }
 
-// Update the info panel for graph2
+// Info panel for graph2
 function updateInfoPanelGraph2(name, value) {
   document.getElementById("info-name2").textContent = name || "";
   document.getElementById("info-value2").textContent = value || "";
 }
 
+// Link info panel for graph2
 function updateLinkInfoPanelGraph1(source = "", target = "", value = "") {
   document.getElementById("link-source1").textContent = source || "";
   document.getElementById("link-target1").textContent = target || "";
   document.getElementById("link-value1").textContent = value || "";
 }
 
+// Link info panel for graph2
 function updateLinkInfoPanelGraph2(source = "", target = "", value = "") {
   document.getElementById("link-source2").textContent = source || "";
   document.getElementById("link-target2").textContent = target || "";
@@ -94,8 +94,8 @@ function highlightLinkInBothDiagrams(sourceName, targetName, highlight = true) {
         d3.select(this)
           .transition()
           .duration(150)
-          .attr("stroke", highlight ? "#000" : "#999") // Toggle color
-          .attr("stroke-width", highlight ? 3 : Math.sqrt(d.value)); // Toggle width based on 'd.value'
+          .attr("stroke", highlight ? "#000" : "#999")
+          .attr("stroke-width", highlight ? 3 : Math.sqrt(d.value));
       });
   });
 }
@@ -105,17 +105,18 @@ function highlightNode(svg, nodeName, selected) {
   svg.selectAll(".nodes circle").each(function (d) {
     if (selected && d.name === nodeName) {
       d3.select(this)
-        .style("stroke", "black") // Apply black border for selected node
-        .style("stroke-width", "2px"); // Border width
+        .style("stroke", "red") // black border for selected node
+        .style("stroke-dasharray", selected ? "7" : "none")
+        .style("stroke-width", "3px");
     } else {
       d3.select(this)
-        .style("stroke", null) // Remove border for non-selected nodes
+        .style("stroke", null) // remove border for non-selected nodes
         .style("stroke-width", null);
     }
   });
 }
 
-// Function to resize nodes on hover and keep selected node highlighted
+// Function to resize nodes on hover and keep the selected node highlighted
 function resizeNodeInBothDiagrams(nodeName, newSizeFactor) {
   [svg1, svg2].forEach((svg) => {
     svg
@@ -130,9 +131,9 @@ function resizeNodeInBothDiagrams(nodeName, newSizeFactor) {
 // Define zoom behaviors for each graph
 const zoom1 = d3
   .zoom()
-  .scaleExtent([0.5, 10]) // Set the scale extent for zooming
+  .scaleExtent([0.5, 10])
   .on("zoom", function (event) {
-    g1.attr("transform", event.transform); // Apply zoom & pan
+    g1.attr("transform", event.transform);
   });
 
 const zoom2 = d3
@@ -159,7 +160,6 @@ d3.select("body").on(
   true
 );
 
-// Initialize the info panels right after creating the SVG elements
 var simulation1;
 var simulation2;
 
@@ -236,17 +236,17 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
       .on("mouseover", function (event, d) {
         highlightLinkInBothDiagrams(d.source.name, d.target.name, true);
 
-        // Update the info panel for the current graph.
+        // Update the info panel for the current graph
         const updateCurrentInfoPanel =
           svg === svg1 ? updateLinkInfoPanelGraph1 : updateLinkInfoPanelGraph2;
         updateCurrentInfoPanel(d.source.name, d.target.name, d.value);
 
-        // Determine the other SVG and corresponding update function.
+        // Determine the other SVG and corresponding update function
         const otherSvg = svg === svg1 ? svg2 : svg1;
         const updateOtherInfoPanel =
           svg === svg1 ? updateLinkInfoPanelGraph2 : updateLinkInfoPanelGraph1;
 
-        // Check if the link exists in the other graph.
+        // Check if the link exists in the other graph
         const linkExistsInOtherGraph = otherSvg
           .selectAll(".links line")
           .data()
@@ -257,10 +257,10 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
           );
 
         if (linkExistsInOtherGraph) {
-          // If the link exists in both graphs, update the other graph's info panel with the link details.
+          // If the link exists in both graphs, update the other graph's info panel with the link details
           updateOtherInfoPanel(d.source.name, d.target.name, d.value);
         } else {
-          // If the link does not exist in the other graph, show "Link does not exist here".
+          // If the link does not exist in the other graph
           updateOtherInfoPanel("Link does not exist here", "", "");
         }
       })
@@ -280,30 +280,28 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
       .append("circle")
       .attr("r", (d) => Math.sqrt(d.value) * 2)
       .attr("fill", (d) => d.colour)
-      .style("stroke-width", "0px") // Initialize without border
+      .style("stroke-width", "0px")
       .call(
         d3
-          .drag() // Enable drag functionality
+          .drag()
           .on("start", dragstarted)
           .on("drag", dragged)
           .on("end", dragended)
       )
       .on("mouseover", function (event, d) {
-        // Enlarge nodes in both graphs, but do not change selection or info panel
-        resizeNodeInBothDiagrams(d.name, 3); // Enlarge node
+        // Enlarge nodes in both graphs
+        resizeNodeInBothDiagrams(d.name, 3);
       })
       .on("mouseout", function (event, d) {
-        resizeNodeInBothDiagrams(d.name, 2); // Shrink node
+        resizeNodeInBothDiagrams(d.name, 2);
       });
     updateThreshold(svg, threshold);
     updateChargeStrength(
       svg === svg1 ? simulation1 : simulation2,
       chargeStrength
     );
-    // Inside the createNodeLinkDiagram function for each svg
     node.on("click", function (event, d) {
-      event.stopPropagation(); // Prevent body click event
-      selectedNode = d; // Update the selected node globally
+      selectedNode = d; // Update the selected node
 
       // Update the info panel for the current graph
       const updateCurrentInfoPanel =
@@ -324,14 +322,13 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
       if (nodeExistsInOtherGraph) {
         // If the node exists in both graphs, update the other graph's info panel with the node details
         updateOtherInfoPanel(d.name, d.value);
-        highlightNode(otherSvg, d.name, true); // Highlight in the other graph if exists
+        highlightNode(otherSvg, d.name, true);
       } else {
-        // If the node does not exist in the other graph, show "Node does not exist here"
+        // If the node does not exist in the other graph
         updateOtherInfoPanel("Node does not exist here", "", "");
-        highlightNode(otherSvg, null, false); // Remove any highlight in the other graph
+        highlightNode(otherSvg, null, false);
       }
 
-      // Always highlight the node in the current graph
       highlightNode(svg, d.name, true);
     });
 
@@ -387,12 +384,11 @@ function updateNodeLinkDiagram(
   chargeStrength
 ) {
   const selectedDataset = datasetDropdown.property("value");
-  g.selectAll("*").remove(); // Clear existing diagram elements from 'g'
-
+  g.selectAll("*").remove();
   createNodeLinkDiagram(svg, g, selectedDataset, threshold, chargeStrength);
 }
 
-// Initial creation of node-link diagrams with default datasets and thresholds
+// Initial creation of node-link diagrams
 updateNodeLinkDiagram(svg1, g1, d3.select("#datasetDropdown1"), 0, 0);
 updateNodeLinkDiagram(svg2, g2, d3.select("#datasetDropdown2"), 0, 0);
 
@@ -417,7 +413,7 @@ d3.select("#datasetDropdown2").on("change", function () {
   );
 });
 
-// Function to update node-link diagram based on threshold slider value
+// Update node-link diagram based on threshold slider value
 function updateThreshold(svg, threshold) {
   const nodes = svg.selectAll(".nodes circle");
   const links = svg.selectAll(".links line");
@@ -454,7 +450,7 @@ d3.select("#nodeSizeSlider2").on("input", function () {
   updateThreshold(svg2, filterValue);
 });
 
-// Connect zoom sliders to zoom behaviors
+// Zoom sliders
 d3.select("#zoomSlider1").on("input", function () {
   const zoomLevel = parseFloat(d3.select(this).property("value"));
   svg1.transition().duration(500).call(zoom1.scaleTo, zoomLevel);
