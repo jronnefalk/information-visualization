@@ -254,7 +254,7 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
             return d3.select(this).style("display") !== "none";
           })
           .data()
-          .some(
+          .find(
             (link) =>
               link.source.name === d.source.name &&
               link.target.name === d.target.name
@@ -262,7 +262,11 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
 
         if (linkExistsInOtherGraph) {
           // If the link exists and is visible in both graphs, update the other graph's info panel with the link details
-          updateOtherInfoPanel(d.source.name, d.target.name, d.value);
+          updateOtherInfoPanel(
+            linkExistsInOtherGraph.source.name,
+            linkExistsInOtherGraph.target.name,
+            linkExistsInOtherGraph.value
+          );
         } else {
           // If the link does not exist or is not visible in the other graph
           updateOtherInfoPanel("Link does not exist here", "", "");
