@@ -234,6 +234,7 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
       .attr("stroke-opacity", 0.6)
       .attr("stroke-width", (d) => Math.sqrt(d.value))
       .on("mouseover", function (event, d) {
+        // Highlight links in both diagrams
         highlightLinkInBothDiagrams(d.source.name, d.target.name, true);
 
         // Update the info panel for the current graph
@@ -246,9 +247,12 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
         const updateOtherInfoPanel =
           svg === svg1 ? updateLinkInfoPanelGraph2 : updateLinkInfoPanelGraph1;
 
-        // Check if the link exists in the other graph
+        // Check if the link exists and is visible in the other graph
         const linkExistsInOtherGraph = otherSvg
           .selectAll(".links line")
+          .filter(function () {
+            return d3.select(this).style("display") !== "none";
+          })
           .data()
           .some(
             (link) =>
@@ -257,14 +261,15 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
           );
 
         if (linkExistsInOtherGraph) {
-          // If the link exists in both graphs, update the other graph's info panel with the link details
+          // If the link exists and is visible in both graphs, update the other graph's info panel with the link details
           updateOtherInfoPanel(d.source.name, d.target.name, d.value);
         } else {
-          // If the link does not exist in the other graph
+          // If the link does not exist or is not visible in the other graph
           updateOtherInfoPanel("Link does not exist here", "", "");
         }
       })
       .on("mouseout", function (event, d) {
+        // Remove highlight from links in both diagrams
         highlightLinkInBothDiagrams(d.source.name, d.target.name, false);
         updateLinkInfoPanelGraph1();
         updateLinkInfoPanelGraph2();
@@ -313,18 +318,21 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
       const updateOtherInfoPanel =
         svg === svg1 ? updateInfoPanelGraph2 : updateInfoPanelGraph1;
 
-      // Check if the node exists in the other graph
+      // Check if the node exists and is visible in the other graph
       const nodeExistsInOtherGraph = otherSvg
         .selectAll(".nodes circle")
+        .filter(function () {
+          return d3.select(this).style("display") !== "none";
+        })
         .data()
         .find((node) => node.name === d.name);
 
       if (nodeExistsInOtherGraph) {
-        // If the node exists in both graphs, update the other graph's info panel with the node details
+        // If the node exists and is visible in both graphs, update the other graph's info panel with the node details
         updateOtherInfoPanel(d.name, d.value);
         highlightNode(otherSvg, d.name, true);
       } else {
-        // If the node does not exist in the other graph
+        // If the node does not exist or is not visible in the other graph
         updateOtherInfoPanel("Node does not exist here", "", "");
         highlightNode(otherSvg, null, false);
       }
