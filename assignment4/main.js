@@ -94,7 +94,7 @@ function highlightLinkInBothDiagrams(sourceName, targetName, highlight = true) {
         d3.select(this)
           .transition()
           .duration(150)
-          .attr("stroke", highlight ? "#000" : "#999")
+          .attr("stroke", highlight ? "red" : "#999")
           .attr("stroke-width", highlight ? 3 : Math.sqrt(d.value));
       });
   });
