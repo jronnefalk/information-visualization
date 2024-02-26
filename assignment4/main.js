@@ -300,45 +300,39 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
       svg === svg1 ? simulation1 : simulation2,
       chargeStrength
     );
-    // Inside createNodeLinkDiagram function for each svg
+    // Inside the createNodeLinkDiagram function for each svg
     node.on("click", function (event, d) {
       event.stopPropagation(); // Prevent body click event
       selectedNode = d; // Update the selected node globally
 
-      // Update info panels based on the selected node
-      const currentGraphIsSvg1 = this.parentNode.parentNode === svg1.node();
-      if (currentGraphIsSvg1) {
-        updateInfoPanelGraph1(d.name, d.value); // Update for svg1 without color
-        const nodeExistsInSvg2 = svg2
-          .selectAll(".nodes circle")
-          .data()
-          .find((node) => node.name === d.name);
-        if (nodeExistsInSvg2) {
-          highlightNode(svg2, d.name, true); // Highlight in svg2 if exists
-          updateInfoPanelGraph2(d.name, d.value); // Also update info panel for svg2 without color
-        } else {
-          updateInfoPanelGraph2("Node does not exist here", ""); // Update info panel indicating non-existence without color
-        }
+      // Update the info panel for the current graph
+      const updateCurrentInfoPanel =
+        svg === svg1 ? updateInfoPanelGraph1 : updateInfoPanelGraph2;
+      updateCurrentInfoPanel(d.name, d.value);
+
+      // Determine the other SVG and corresponding update function
+      const otherSvg = svg === svg1 ? svg2 : svg1;
+      const updateOtherInfoPanel =
+        svg === svg1 ? updateInfoPanelGraph2 : updateInfoPanelGraph1;
+
+      // Check if the node exists in the other graph
+      const nodeExistsInOtherGraph = otherSvg
+        .selectAll(".nodes circle")
+        .data()
+        .find((node) => node.name === d.name);
+
+      if (nodeExistsInOtherGraph) {
+        // If the node exists in both graphs, update the other graph's info panel with the node details
+        updateOtherInfoPanel(d.name, d.value);
+        highlightNode(otherSvg, d.name, true); // Highlight in the other graph if exists
       } else {
-        updateInfoPanelGraph2(d.name, d.value); // Update for svg2 without color
-        const nodeExistsInSvg1 = svg1
-          .selectAll(".nodes circle")
-          .data()
-          .find((node) => node.name === d.name);
-        if (nodeExistsInSvg1) {
-          highlightNode(svg1, d.name, true); // Highlight in svg1 if exists
-          updateInfoPanelGraph1(d.name, d.value); // Also update info panel for svg1 without color
-        } else {
-          updateInfoPanelGraph1("Node does not exist here", ""); // Update info panel indicating non-existence without color
-        }
+        // If the node does not exist in the other graph, show "Node does not exist here"
+        updateOtherInfoPanel("Node does not exist here", "", "");
+        highlightNode(otherSvg, null, false); // Remove any highlight in the other graph
       }
 
       // Always highlight the node in the current graph
-      highlightNode(
-        this.parentNode.parentNode === svg1.node() ? svg1 : svg2,
-        d.name,
-        true
-      );
+      highlightNode(svg, d.name, true);
     });
 
     // Force simulation tick update
