@@ -329,7 +329,10 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
 
       if (nodeExistsInOtherGraph) {
         // If the node exists and is visible in both graphs, update the other graph's info panel with the node details
-        updateOtherInfoPanel(d.name, d.value);
+        updateOtherInfoPanel(
+          nodeExistsInOtherGraph.name,
+          nodeExistsInOtherGraph.value
+        );
         highlightNode(otherSvg, d.name, true);
       } else {
         // If the node does not exist or is not visible in the other graph
