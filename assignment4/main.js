@@ -235,11 +235,19 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
       .attr("stroke-width", (d) => Math.sqrt(d.value))
       .on("mouseover", function (event, d) {
         highlightLinkInBothDiagrams(d.source.name, d.target.name, true);
-        // Highlight this link in graph1 and update its info panel
-        updateLinkInfoPanelGraph1(d.source.name, d.target.name, d.value);
 
-        // Check if the link exists in graph2 and update/higlight accordingly
-        const linkExistsInSvg2 = svg2
+        // Update the info panel for the current graph.
+        const updateCurrentInfoPanel =
+          svg === svg1 ? updateLinkInfoPanelGraph1 : updateLinkInfoPanelGraph2;
+        updateCurrentInfoPanel(d.source.name, d.target.name, d.value);
+
+        // Determine the other SVG and corresponding update function.
+        const otherSvg = svg === svg1 ? svg2 : svg1;
+        const updateOtherInfoPanel =
+          svg === svg1 ? updateLinkInfoPanelGraph2 : updateLinkInfoPanelGraph1;
+
+        // Check if the link exists in the other graph.
+        const linkExistsInOtherGraph = otherSvg
           .selectAll(".links line")
           .data()
           .some(
@@ -247,11 +255,13 @@ function createNodeLinkDiagram(svg, g, datasetUrl, threshold, chargeStrength) {
               link.source.name === d.source.name &&
               link.target.name === d.target.name
           );
-        if (linkExistsInSvg2) {
-          highlightLinkInBothDiagrams(d.source.name, d.target.name, true); // Assuming you have this function implemented
-          updateLinkInfoPanelGraph2(d.source.name, d.target.name, d.value);
+
+        if (linkExistsInOtherGraph) {
+          // If the link exists in both graphs, update the other graph's info panel with the link details.
+          updateOtherInfoPanel(d.source.name, d.target.name, d.value);
         } else {
-          updateLinkInfoPanelGraph2("Link does not exist here", "", "");
+          // If the link does not exist in the other graph, show "Link does not exist here".
+          updateOtherInfoPanel("Link does not exist here", "", "");
         }
       })
       .on("mouseout", function (event, d) {
