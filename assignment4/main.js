@@ -104,10 +104,7 @@ function highlightLinkInBothDiagrams(sourceName, targetName, highlight = true) {
 function highlightNode(svg, nodeName, selected) {
   svg.selectAll(".nodes circle").each(function (d) {
     if (selected && d.name === nodeName) {
-      d3.select(this)
-        .style("stroke", "red") // black border for selected node
-        .style("stroke-dasharray", selected ? "7" : "none")
-        .style("stroke-width", "3px");
+      d3.select(this).style("stroke", "red").style("stroke-width", "3px");
     } else {
       d3.select(this)
         .style("stroke", null) // remove border for non-selected nodes
