@@ -46,11 +46,11 @@
         .diagram-container svg {
             width: 800px; 
             height: 800px; 
-            border: 1px solid #ccc;
+            border: 1px solid #e7e7e7;
         }
         .info-panel {
             padding: 10px;
-            background-color: #d7d7d7;
+            background-color: #e7e7e7;
             border-radius: 5px;
             box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
             width: 250px; 
@@ -71,31 +71,41 @@
             color: #000;
             margin: 6px;
         }
+        .big-title {
+            width: 100%;
+            text-align: center;
+            color: white; 
+            margin-bottom: 20px; 
+            font-size: 64px; 
+            text-shadow: 4px 4px 8px #000000; 
+        }
     </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
 </head>
 <body>
+    <h1 class="big-title">Star Wars Episodes Visualization</h1>
+
     <div class="graph-info-container">
         <div class="panels-container">
-            <h3>Node Information</h3>
+            <h3>Character Information</h3>
             <div id="info-panel1" class="info-panel">
                 <p>Name: <span id="info-name1"></span></p>
-                <p>Value: <span id="info-value1"></span></p>
+                <p>Scene appearences: <span id="info-value1"></span></p>
             </div>
             <h3>Link Information</h3>
             <div class="info-panel" id="link-info-panel1">
                 <p>Source: <span id="link-source1"></span></p>
                 <p>Target: <span id="link-target1"></span></p>
-                <p>Value: <span id="link-value1"></span></p>
+                <p>Scene appearences together: <span id="link-value1"></span></p>
             </div>
             <div id="controls1" class="controls">
-                <label for="datasetDropdown1">Dataset: </label>
+                <label for="datasetDropdown1">Episodes: </label>
                 <select id="datasetDropdown1"></select>
-                <label for="nodeSizeSlider1">Node Size Threshold: <span id="nodeSizeValue1">0</span></label>
+                <label for="nodeSizeSlider1">Scene appearences: <span id="nodeSizeValue1">0</span></label>
                 <input type="range" id="nodeSizeSlider1" min="0" max="180" step="1" value="0">
-<label for="strengthSlider1">Link Distance: <span id="strengthValue1">0</span></label>
+                <label for="strengthSlider1">Link Distance: <span id="strengthValue1">0</span></label>
                 <input type="range" id="strengthSlider1" min="0" max="500" step="1" value="0">
                 <label for="zoomSlider1">Zoom:</label>
                 <input type="range" id="zoomSlider1" min="0.5" max="2" step="0.05" value="1">
@@ -109,21 +119,21 @@
 
     <div class="graph-info-container">
         <div class="panels-container">
-            <h3>Node Information</h3>
+            <h3>Character Information</h3>
             <div id="info-panel2" class="info-panel">
                 <p>Name: <span id="info-name2"></span></p>
-                <p>Value: <span id="info-value2"></span></p>
+                <p>Scene appearences: <span id="info-value2"></span></p>
             </div>
             <h3>Link Information</h3>
             <div class="info-panel" id="link-info-panel2">
                 <p>Source: <span id="link-source2"></span></p>
                 <p>Target: <span id="link-target2"></span></p>
-                <p>Value: <span id="link-value2"></span></p>
+                <p>Scene appearences together: <span id="link-value2"></span></p>
             </div>
             <div id="controls2" class="controls">
-                <label for="datasetDropdown2">Dataset: </label>
+                <label for="datasetDropdown2">Episode: </label>
                 <select id="datasetDropdown2"></select>
-                <label for="nodeSizeSlider2">Node Size Threshold: <span id="nodeSizeValue2">0</span></label>
+                <label for="nodeSizeSlider2">Scene appearences: <span id="nodeSizeValue2">0</span></label>
                 <input type="range" id="nodeSizeSlider2" min="0" max="180" step="1" value="0">
                 <label for="strengthSlider2">Link Distance: <span id="strengthValue2">0</span></label>
                 <input type="range" id="strengthSlider2" min="0" max="500" step="1" value="0">
